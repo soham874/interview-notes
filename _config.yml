@@ -1,0 +1,13 @@
+# GitHub Pages builds this repo with Jekyll. index.html uses that build to list every
+# page in Visualizers/, so a new visualizer only has to be added to that folder.
+#
+# A Pages site is public even when the repo is private, so only the homepage and the
+# visualizers are published. Everything matched below stays in the repo but is left off
+# the site; remove a line to publish it.
+exclude:
+  - "*.md"
+  - "*.pdf"
+  - Java_SpringBoot
+
+# index.html carries its own styling, so skip the default theme's stylesheet.
+theme: null

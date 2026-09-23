@@ -1,0 +1,399 @@
+---
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DSA Visualizers · Interview Notes</title>
+<meta name="description" content="Step-through walkthroughs of coding interview problems: the key idea, a dry run you can scrub through, and similar problems to try next.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#EEF1F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1219" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B7A85'/%3E%3Cpath d='M9.5 23v-6M16 23V9M22.5 23v-9.5' stroke='%23fff' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<!--
+  Homepage for GitHub Pages. The empty front matter at the top makes Jekyll process this file, and
+  the Liquid loop further down lists every .html file in the Visualizers folder at build time, so
+  adding a page to that folder is all it takes for it to show up here. The script at the bottom then
+  reads each page's title, source, difficulty, tags and key idea to fill in its card.
+-->
+<style>
+:root{
+  --bg:#EEF1F5; --surface:#FFFFFF; --surface-2:#E4E9F0; --ink:#121925; --ink-2:#4B5668; --ink-3:#7A8699; --line:#D3DAE4;
+  --accent:#0B7A85; --accent-ink:#FFFFFF; --accent-soft:#D5ECEE;
+  --easy:#1F7A38; --medium:#8F6200; --hard:#C42A2A;
+  --easy-dot:#2B9A48; --medium-dot:#C2890B; --hard-dot:#D63030;
+  --shadow:0 1px 2px rgb(18 25 37 / .06), 0 10px 26px -14px rgb(18 25 37 / .28);
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0D1219; --surface:#151C26; --surface-2:#1D2632; --ink:#E5EAF1; --ink-2:#A2ADBD; --ink-3:#6F7C8F; --line:#28323F;
+  --accent:#3CC3CF; --accent-ink:#06282C; --accent-soft:#143339;
+  --easy:#4CC46C; --medium:#E8B53A; --hard:#FF6464;
+  --easy-dot:#4CC46C; --medium-dot:#E8B53A; --hard-dot:#FF6464;
+  --shadow:0 1px 2px rgb(0 0 0 / .3), 0 12px 30px -14px rgb(0 0 0 / .75);
+}}
+:root[data-theme="dark"]{
+  --bg:#0D1219; --surface:#151C26; --surface-2:#1D2632; --ink:#E5EAF1; --ink-2:#A2ADBD; --ink-3:#6F7C8F; --line:#28323F;
+  --accent:#3CC3CF; --accent-ink:#06282C; --accent-soft:#143339;
+  --easy:#4CC46C; --medium:#E8B53A; --hard:#FF6464;
+  --easy-dot:#4CC46C; --medium-dot:#E8B53A; --hard-dot:#FF6464;
+  --shadow:0 1px 2px rgb(0 0 0 / .3), 0 12px 30px -14px rgb(0 0 0 / .75);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+code{font:500 .9em var(--f-mono)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-bottom:40px}
+
+/* header */
+.top{display:grid;gap:12px;padding-block:clamp(36px,7vw,72px) clamp(22px,3vw,30px)}
+.eyebrow{margin:0;font:600 .72rem/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{margin:0;font:700 clamp(2.3rem,6.4vw,3.9rem)/1.02 var(--f-display);letter-spacing:-.03em;text-wrap:balance}
+.lede{margin:0;max-width:62ch;color:var(--ink-2);font-size:1.03rem;text-wrap:pretty}
+
+/* search, difficulty filter, sort */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:10px}
+.search{position:relative;flex:1 1 280px;min-width:0}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-3);pointer-events:none}
+.search input{width:100%;height:42px;padding:0 14px 0 38px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:1rem var(--f-body)}
+.search input::placeholder{color:var(--ink-3)}
+.search input:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+.search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.search kbd{position:absolute;right:11px;top:50%;transform:translateY(-50%);padding:3px 7px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:var(--surface-2);color:var(--ink-2);font:600 .72rem/1 var(--f-mono);pointer-events:none}
+.search input:focus ~ kbd,.search input:not(:placeholder-shown) ~ kbd{display:none}
+@media (hover:none),(max-width:640px){.search kbd{display:none}}
+.seg{display:flex;gap:2px;max-width:100%;padding:3px;overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{flex:none;display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border:0;border-radius:7px;background:transparent;color:var(--ink-2);font:500 .86rem/1 var(--f-body);white-space:nowrap;cursor:pointer}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgb(0 0 0 / .14)}
+.seg .n{font:600 .72rem/1 var(--f-mono);color:var(--ink-2)}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.dot.easy{color:var(--easy-dot)} .dot.medium{color:var(--medium-dot)} .dot.hard{color:var(--hard-dot)}
+.sort{display:flex;align-items:center;gap:8px;color:var(--ink-2);font-size:.86rem}
+.sort select{height:42px;padding:0 34px 0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A8699' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;color:var(--ink);font:500 .88rem var(--f-body);appearance:none;cursor:pointer}
+@media (pointer:coarse){.sort select{font-size:16px}} /* 16px+ stops iOS zooming in on focus */
+@media (max-width:360px){.seg .dot{display:none}.seg button{padding:0 9px}}
+
+/* result count + active topic */
+.status{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;min-height:30px;margin-bottom:14px;color:var(--ink-2);font-size:.88rem}
+.status p{margin:0}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 9px 4px 11px;border:1px solid var(--accent);border-radius:999px;background:var(--accent-soft);color:var(--ink);font:500 .82rem/1.2 var(--f-body);cursor:pointer}
+.linkish{padding:0;border:0;background:none;color:var(--accent);font:500 .88rem var(--f-body);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:14px;margin:0;padding:0;list-style:none}
+.card{position:relative;display:flex;flex-direction:column;gap:10px;min-width:0;padding:18px 18px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease}
+@media (hover:hover){
+  .card:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));box-shadow:var(--shadow);transform:translateY(-2px)}
+  .card:hover .card-title a{color:var(--accent)}
+}
+.card-top{display:flex;align-items:center;gap:8px;min-height:24px}
+.card-top:empty{display:none}
+.card-src{font:600 .72rem/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.diff{margin-left:auto;padding:3px 9px;border:1px solid currentColor;border-radius:999px;font:600 .74rem/1.2 var(--f-body)}
+.diff.easy{color:var(--easy)} .diff.medium{color:var(--medium)} .diff.hard{color:var(--hard)}
+.card-title{margin:0;font:700 1.2rem/1.25 var(--f-display);letter-spacing:-.01em;text-wrap:balance}
+.card-title a{color:inherit;text-decoration:none}
+.card-title a::after{content:"";position:absolute;inset:0;border-radius:var(--r)}
+.card-title a:focus-visible{outline:none}
+.card-title a:focus-visible::after{outline:2px solid var(--accent);outline-offset:2px}
+.card-idea{display:-webkit-box;margin:0;overflow:hidden;color:var(--ink-2);font-size:.9rem;line-height:1.55;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3}
+.card-idea:empty{display:none}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:auto 0 0;padding:4px 0 0;list-style:none}
+.tags:empty{display:none}
+.tag{position:relative;z-index:1;padding:3px 9px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);color:var(--ink-2);font:500 .78rem/1.3 var(--f-body);cursor:pointer}
+.tag:hover{border-color:var(--accent);color:var(--accent)}
+.tag[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.card.is-loading .card-top:empty,.card.is-loading .card-idea:empty,.card.is-loading .tags:empty{display:block;border-radius:6px;background:var(--surface-2);animation:pulse 1.1s ease-in-out infinite alternate}
+.card.is-loading .card-top:empty{width:45%;height:22px}
+.card.is-loading .card-idea:empty{height:4.2em}
+.card.is-loading .tags:empty{width:70%;height:24px}
+@keyframes pulse{from{opacity:.45}to{opacity:1}}
+.empty{margin:0;padding:36px 20px;border:1px dashed var(--line);border-radius:var(--r);color:var(--ink-2);text-align:center}
+
+/* shown only if this file is opened without the GitHub Pages build */
+.note-unbuilt{display:none;margin:0;padding:18px 20px;border:1px dashed var(--line);border-radius:var(--r);color:var(--ink-2)}
+body:not([data-built="jekyll"]) .needs-build{display:none!important}
+body:not([data-built="jekyll"]) .note-unbuilt{display:block}
+
+footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 24px;margin-top:56px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-2);font-size:.82rem}
+footer p{margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.card:hover{transform:none!important}}
+</style>
+</head>
+<body data-built="{{ 'jekyll' }}">
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">Interview notes</p>
+    <h1>DSA Visualizers</h1>
+    <p class="lede">Step-through walkthroughs of coding interview problems: the key idea, a dry run you can scrub through, and similar problems to try next.</p>
+  </header>
+
+  <main>
+    <div class="needs-build">
+      {%- assign visualizers = site.static_files | where_exp: "file", "file.path contains '/Visualizers/'" | where: "extname", ".html" | sort: "path" %}
+      <div class="toolbar" id="toolbar" role="search" hidden>
+        <label class="search">
+          <span class="sr-only">Search visualizers</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+          <input id="q" type="search" placeholder="Search name, topic or number" autocomplete="off" spellcheck="false">
+          <kbd aria-hidden="true">/</kbd>
+        </label>
+        <div class="seg" role="group" aria-label="Difficulty">
+          <button type="button" data-diff="all" aria-pressed="true">All <span class="n"></span></button>
+          <button type="button" data-diff="easy" aria-pressed="false"><span class="dot easy"></span>Easy <span class="n"></span></button>
+          <button type="button" data-diff="medium" aria-pressed="false"><span class="dot medium"></span>Medium <span class="n"></span></button>
+          <button type="button" data-diff="hard" aria-pressed="false"><span class="dot hard"></span>Hard <span class="n"></span></button>
+        </div>
+        <label class="sort">Sort
+          <select id="sort" autocomplete="off">
+            <option value="name">Name</option>
+            <option value="number">Problem #</option>
+            <option value="difficulty">Difficulty</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="status">
+        <p id="count" aria-live="polite">{{ visualizers.size }} visualizer{% if visualizers.size != 1 %}s{% endif %}</p>
+        <button type="button" class="pill" id="tag-pill" hidden>Topic: <b></b><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="sr-only">(remove)</span></button>
+        <button type="button" class="linkish" id="clear" hidden>Clear filters</button>
+      </div>
+
+      <ul class="grid" id="grid">
+        {%- for file in visualizers %}
+        {%- assign href = file.path | remove_first: "/" | uri_escape %}
+        {%- assign name = file.basename | replace: "-visualizer", "" | replace: "-", " " | replace: "_", " " | strip %}
+        <li class="card">
+          <div class="card-top"></div>
+          <h2 class="card-title"><a href="{{ href | escape }}">{{ name | slice: 0 | upcase | escape }}{{ name | slice: 1, name.size | escape }}</a></h2>
+          <p class="card-idea"></p>
+          <ul class="tags" aria-label="Topics"></ul>
+        </li>
+        {%- endfor %}
+      </ul>
+      {%- if visualizers.size == 0 %}
+      <p class="empty">No visualizers yet. Add an <code>.html</code> page to the <code>Visualizers</code> folder and it will show up here after the next GitHub Pages build.</p>
+      {%- endif %}
+      <p class="empty" id="no-match" hidden>Nothing matches these filters.</p>
+    </div>
+
+    <p class="note-unbuilt">The visualizer list is generated when GitHub Pages builds this site, so it only appears on the published page. In the repo, go to Settings → Pages and deploy from the <code>main</code> branch.</p>
+  </main>
+
+  <footer class="needs-build">
+    <p>Every page in the <code>Visualizers</code> folder is listed here automatically.</p>
+    <p>Updated {{ site.time | date: "%-d %b %Y" }}{% if site.github.repository_url %} · <a href="{{ site.github.repository_url }}">{{ site.github.repository_nwo }}</a>{% endif %}</p>
+  </footer>
+</div>
+
+<script>
+/* Fills in each card from the visualizer page it links to, then wires up search, filters and sort.
+   The list itself comes from the Jekyll build above, so this only enhances it. */
+(() => {
+  'use strict';
+  if (document.body.dataset.built !== 'jekyll') return; // opened without the GitHub Pages build
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const grid = $('#grid');
+  const cards = [...grid.children];
+  if (!cards.length) return;
+
+  const ui = { toolbar: $('#toolbar'), q: $('#q'), sort: $('#sort'), count: $('#count'), tagPill: $('#tag-pill'), clear: $('#clear'), noMatch: $('#no-match') };
+  const diffButtons = [...ui.toolbar.querySelectorAll('[data-diff]')];
+  const RANK = { easy: 1, medium: 2, hard: 3 };
+  const state = { q: '', diff: 'all', tag: '', sort: 'name' };
+  const meta = new Map(); // card -> { title, source, id, difficulty, tags, idea, text }
+
+  /* ---- reading a visualizer page ---- */
+
+  // HTML fragment -> plain text. DOMParser documents are inert: nothing in them runs or loads.
+  const toText = html => new DOMParser().parseFromString(html, 'text/html').body.textContent.replace(/\s+/g, ' ').trim();
+
+  // Value of a top-level `key: '...'` line (any quote style) in the page's PROBLEM object.
+  // Nested entries such as similar problems are indented deeper, so they never match.
+  function readString(src, key) {
+    const m = new RegExp('^[ \\t]{0,4}' + key + '\\s*:\\s*([\'"`])', 'm').exec(src);
+    if (!m) return '';
+    let out = '';
+    for (let i = m.index + m[0].length; i < src.length; i++) {
+      const c = src[i];
+      if (c === m[1]) return out;
+      if (c === '\\') { const e = src[++i] || ''; out += e === 'n' || e === 't' ? ' ' : e; }
+      else out += c;
+    }
+    return '';
+  }
+
+  function parseMeta(html) {
+    const titleTag = /<title[^>]*>([^<]*)<\/title>/i.exec(html);
+    const fallback = { title: titleTag ? toText(titleTag[1]) : '' };
+    const at = html.search(/\bPROBLEM\s*=\s*\{/);
+    if (at === -1) return fallback;
+    const src = html.slice(at);
+    const id = /^[ \t]{0,4}id\s*:\s*(\d+)/m.exec(src);
+    const tags = /^[ \t]{0,4}tags\s*:\s*\[([^\]]*)\]/m.exec(src);
+    const difficulty = readString(src, 'difficulty').toLowerCase();
+    return {
+      title: toText(readString(src, 'title')) || fallback.title,
+      source: toText(readString(src, 'source')),
+      id: id ? Number(id[1]) : null,
+      difficulty: RANK[difficulty] ? difficulty : '',
+      tags: tags ? [...tags[1].matchAll(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g)].map(t => toText(t[2])).filter(Boolean) : [],
+      idea: toText(readString(src, 'insight') || readString(src, 'summary')),
+    };
+  }
+
+  /* ---- cards ---- */
+
+  const el = (tag, cls, text) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text) node.textContent = text;
+    return node;
+  };
+  const hrefOf = card => $('a', card).getAttribute('href');
+
+  function setMeta(card, m) {
+    const link = $('.card-title a', card);
+    const title = m.title || link.textContent.trim();
+    const tags = m.tags || [];
+    const label = [m.source, m.id != null ? '#' + m.id : ''].filter(Boolean).join(' ');
+    meta.set(card, { ...m, title, tags, text: [title, label, ...tags, hrefOf(card)].join(' ').toLowerCase() });
+
+    link.textContent = title;
+    const top = $('.card-top', card);
+    top.replaceChildren();
+    if (label) top.append(el('span', 'card-src', label));
+    if (m.difficulty) top.append(el('span', 'diff ' + m.difficulty, m.difficulty[0].toUpperCase() + m.difficulty.slice(1)));
+    $('.card-idea', card).textContent = m.idea || '';
+    $('.tags', card).replaceChildren(...tags.map(t => {
+      const button = el('button', 'tag', t);
+      button.type = 'button';
+      button.dataset.tag = t;
+      button.setAttribute('aria-pressed', String(t === state.tag));
+      const li = el('li');
+      li.append(button);
+      return li;
+    }));
+  }
+
+  /* ---- search, filters, sort ---- */
+
+  const matches = (card, withDifficulty) => {
+    const m = meta.get(card);
+    return (!withDifficulty || state.diff === 'all' || m.difficulty === state.diff)
+      && (!state.tag || m.tags.includes(state.tag))
+      && (!state.q || m.text.includes(state.q));
+  };
+  const byTitle = (a, b) => meta.get(a).title.localeCompare(meta.get(b).title, undefined, { numeric: true, sensitivity: 'base' });
+  const SORTS = {
+    name: byTitle,
+    number: (a, b) => (meta.get(a).id ?? Infinity) - (meta.get(b).id ?? Infinity) || byTitle(a, b),
+    difficulty: (a, b) => (RANK[meta.get(a).difficulty] || 4) - (RANK[meta.get(b).difficulty] || 4) || byTitle(a, b),
+  };
+
+  function update() {
+    const pool = cards.filter(c => matches(c, false));
+    const counts = { all: pool.length, easy: 0, medium: 0, hard: 0 };
+    for (const c of pool) if (meta.get(c).difficulty) counts[meta.get(c).difficulty]++;
+    for (const b of diffButtons) {
+      b.setAttribute('aria-pressed', String(b.dataset.diff === state.diff));
+      $('.n', b).textContent = counts[b.dataset.diff];
+    }
+
+    const shown = pool.filter(c => matches(c, true)).sort(SORTS[state.sort] || byTitle);
+    const visible = new Set(shown);
+    for (const c of cards) c.hidden = !visible.has(c);
+    // Reorder only when the order changed, so a focused tag button keeps its focus.
+    const current = [...grid.children].filter(c => !c.hidden);
+    if (shown.some((c, i) => current[i] !== c)) grid.append(...shown);
+    for (const b of grid.querySelectorAll('.tag')) b.setAttribute('aria-pressed', String(b.dataset.tag === state.tag));
+
+    const noun = cards.length === 1 ? 'visualizer' : 'visualizers';
+    const filtered = Boolean(state.q || state.tag || state.diff !== 'all');
+    ui.count.textContent = filtered ? `${shown.length} of ${cards.length} ${noun}` : `${cards.length} ${noun}`;
+    ui.tagPill.hidden = !state.tag;
+    $('b', ui.tagPill).textContent = state.tag;
+    ui.clear.hidden = !filtered;
+    ui.noMatch.hidden = shown.length > 0;
+  }
+
+  ui.q.addEventListener('input', () => { state.q = ui.q.value.trim().toLowerCase(); update(); });
+  ui.sort.addEventListener('change', () => { state.sort = ui.sort.value; update(); });
+  for (const b of diffButtons) b.addEventListener('click', () => { state.diff = b.dataset.diff; update(); });
+  grid.addEventListener('click', e => {
+    const tag = e.target.closest('.tag');
+    if (!tag) return;
+    state.tag = state.tag === tag.dataset.tag ? '' : tag.dataset.tag;
+    update();
+  });
+  ui.tagPill.addEventListener('click', () => { state.tag = ''; update(); ui.q.focus(); });
+  ui.clear.addEventListener('click', () => {
+    Object.assign(state, { q: '', diff: 'all', tag: '' });
+    ui.q.value = '';
+    update();
+    ui.q.focus();
+  });
+  document.addEventListener('keydown', e => {
+    const typing = e.target instanceof Element && e.target.closest('input, select, textarea, [contenteditable]');
+    if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || typing) return;
+    e.preventDefault();
+    ui.q.focus();
+  });
+
+  /* ---- load: cached metadata first, then refresh from the pages ---- */
+
+  const CACHE_KEY = 'dsa-visualizers:meta:v1';
+  let cache = {};
+  try { cache = JSON.parse(localStorage.getItem(CACHE_KEY)) || {}; } catch (e) { /* storage unavailable */ }
+
+  for (const card of cards) {
+    const cached = cache[hrefOf(card)];
+    setMeta(card, cached || {});
+    card.classList.toggle('is-loading', !cached);
+  }
+  state.q = ui.q.value.trim().toLowerCase(); // the browser may restore these on back/forward
+  state.sort = ui.sort.value;
+  ui.toolbar.hidden = false;
+  update();
+
+  const queue = [...cards];
+  const fresh = {};
+  const worker = async () => {
+    for (let card; (card = queue.shift());) {
+      const href = hrefOf(card);
+      try {
+        const res = await fetch(href);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        fresh[href] = parseMeta(await res.text());
+        setMeta(card, fresh[href]);
+      } catch (e) { /* keep the current details; the link itself still works */ }
+      card.classList.remove('is-loading');
+    }
+  };
+  Promise.all(Array.from({ length: Math.min(4, cards.length) }, worker)).then(() => {
+    update();
+    const next = {};
+    for (const card of cards) {
+      const href = hrefOf(card);
+      if (fresh[href] || cache[href]) next[href] = fresh[href] || cache[href];
+    }
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(next)); } catch (e) { /* storage unavailable */ }
+  });
+})();
+</script>
+</body>
+</html>
