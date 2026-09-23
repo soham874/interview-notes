@@ -1,0 +1,1011 @@
+<title>Median of Two Sorted Arrays</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#EEF1F5; --surface:#FFFFFF; --surface-2:#E4E9F0; --ink:#121925; --ink-2:#4B5668; --ink-3:#7A8699; --line:#D3DAE4;
+  --accent:#0B7A85; --accent-ink:#FFFFFF; --accent-soft:#D5ECEE;
+  --m-active:#E8590C; --m-compare:#1C6FD1; --m-done:#7FA3AA; --m-found:#2B9A48; --m-bad:#D63030; --m-visited:#8A5CD1; --m-path:#C2890B;
+  --water:#4BA3F0; --code-bg:#0F1620; --code-ink:#D7DEE8; --code-hl:#243447; --code-num:#5B6B80;
+  --tk-kw:#F28FAD; --tk-str:#A6E3A1; --tk-num:#FAB387; --tk-com:#6C7A8E; --tk-fn:#89B4FA;
+  --easy:#2B9A48; --medium:#C2890B; --hard:#D63030;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0D1219; --surface:#151C26; --surface-2:#1D2632; --ink:#E5EAF1; --ink-2:#A2ADBD; --ink-3:#6F7C8F; --line:#28323F;
+  --accent:#3CC3CF; --accent-ink:#06282C; --accent-soft:#143339;
+  --m-active:#FF8A4C; --m-compare:#5AA2F5; --m-done:#4F7C84; --m-found:#4CC46C; --m-bad:#FF6464; --m-visited:#B08CF5; --m-path:#E8B53A;
+  --water:#3E8FD6; --code-bg:#0A0F15; --code-hl:#1F3043;
+  --easy:#4CC46C; --medium:#E8B53A; --hard:#FF6464;
+}}
+:root[data-theme="dark"]{
+  --bg:#0D1219; --surface:#151C26; --surface-2:#1D2632; --ink:#E5EAF1; --ink-2:#A2ADBD; --ink-3:#6F7C8F; --line:#28323F;
+  --accent:#3CC3CF; --accent-ink:#06282C; --accent-soft:#143339;
+  --m-active:#FF8A4C; --m-compare:#5AA2F5; --m-done:#4F7C84; --m-found:#4CC46C; --m-bad:#FF6464; --m-visited:#B08CF5; --m-path:#E8B53A;
+  --water:#3E8FD6; --code-bg:#0A0F15; --code-hl:#1F3043;
+  --easy:#4CC46C; --medium:#E8B53A; --hard:#FF6464;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none!important;animation:none!important} }
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:0 64px}
+a{color:var(--accent)}
+code,.mono{font-family:var(--f-mono);font-size:.92em}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h2{font-size:1.55rem;font-weight:700;letter-spacing:-.01em}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0}
+.eyebrow{font:600 .72rem/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.muted{color:var(--ink-2)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:.8rem;color:var(--ink-2);white-space:nowrap}
+.diff{font-weight:600;border-color:currentColor;background:transparent}
+.diff.easy{color:var(--easy)} .diff.medium{color:var(--medium)} .diff.hard{color:var(--hard)}
+.btn{font:500 .88rem/1 var(--f-body);display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;min-height:38px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08);color:var(--accent-ink)}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:default}
+
+/* header */
+header.top{padding-block:40px 22px;display:grid;gap:14px}
+header.top h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:700;letter-spacing:-.025em}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin-inline:calc(-1 * clamp(16px,4vw,40px));padding-inline:clamp(16px,4vw,40px)}
+nav.toc ul{list-style:none;margin:0;padding:10px 0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.toc a{display:block;padding:6px 12px;border-radius:7px;text-decoration:none;color:var(--ink-2);font-size:.88rem;white-space:nowrap}
+nav.toc a:hover{background:var(--surface-2);color:var(--ink)}
+section>*,.algo>*,.grid2>*{min-width:0}
+section,.algo,.player,.panel,.p-stage,.grid2>div{grid-template-columns:minmax(0,1fr)}
+.cx .chip{white-space:normal;max-width:100%}
+li code,p code,.summary code,.hint code{overflow-wrap:anywhere}
+section{padding-top:44px;scroll-margin-top:56px;display:grid;gap:18px}
+.sec-head{display:grid;gap:6px}
+
+/* problem */
+.two{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px}
+@media (max-width:860px){.two{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;display:grid;gap:12px;align-content:start;min-width:0}
+.summary{max-width:68ch}
+.summary p+p{margin-top:10px}
+.ex{border-top:1px dashed var(--line);padding-top:10px;display:grid;gap:4px}
+.ex:first-child{border-top:0;padding-top:0}
+.ex .io{font-family:var(--f-mono);font-size:.84rem;overflow-x:auto;white-space:pre}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:4px}
+
+/* approach */
+.hints{display:grid;gap:8px}
+.hint{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.hint .n{font:600 .75rem/1 var(--f-mono);color:var(--accent);padding-top:4px}
+.hint .body[data-locked="true"]{filter:blur(5px);user-select:none;cursor:pointer}
+.approaches{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.appr{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:grid;gap:8px;align-content:start}
+.appr.best{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.appr .cx{display:flex;gap:8px;flex-wrap:wrap}
+.cx .chip{font-family:var(--f-mono);font-size:.76rem}
+.insight{border-left:3px solid var(--accent);padding:10px 16px;background:var(--accent-soft);border-radius:0 var(--r) var(--r) 0;max-width:80ch}
+
+/* player */
+.player{scroll-margin-top:64px;background:var(--surface);border:1px solid var(--line);border-radius:14px;display:grid;overflow:hidden;min-width:0}
+.player:focus-visible{outline-offset:-2px}
+.p-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.p-bar .lbl{font-size:.8rem;color:var(--ink-3);margin-right:4px}
+.p-custom{display:grid;gap:10px;padding:14px;border-bottom:1px solid var(--line)}
+.p-custom .fields{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.p-custom label{display:grid;gap:4px;font-size:.8rem;color:var(--ink-2)}
+.p-custom input{font:0.88rem var(--f-mono);padding:8px 10px;border-radius:7px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.p-custom .err{color:var(--m-bad);font-size:.85rem}
+.p-main{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);min-height:360px}
+@media (max-width:900px){.p-main{grid-template-columns:minmax(0,1fr)}}
+.p-stage{padding:16px;display:grid;gap:14px;align-content:start;min-width:0;border-right:1px solid var(--line)}
+@media (max-width:900px){.p-stage{border-right:0;border-bottom:1px solid var(--line)}}
+.p-side{display:grid;grid-template-rows:auto 1fr;min-width:0;background:var(--code-bg)}
+.narr{display:grid;gap:4px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft);min-height:64px}
+.narr .ct{font:600 .72rem/1 var(--f-mono);letter-spacing:.08em;color:var(--accent);text-transform:uppercase}
+.narr .msg{font-size:.98rem}
+.vars{display:flex;flex-wrap:wrap;gap:6px}
+.var{font:.8rem var(--f-mono);padding:4px 9px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line)}
+.var b{color:var(--ink-3);font-weight:400}
+.var.chg{border-color:var(--m-active);background:color-mix(in srgb,var(--m-active) 14%,var(--surface))}
+.struct{display:grid;gap:6px;min-width:0}
+.struct .sname{font:600 .74rem/1 var(--f-mono);color:var(--ink-3);letter-spacing:.04em}
+.scroll{overflow-x:auto;padding-bottom:4px}
+.result{padding:10px 14px;border-radius:var(--r);font-weight:500;border:1px solid var(--line)}
+.result.ok{border-color:var(--m-found);color:var(--m-found)}
+.result.no{border-color:var(--m-bad);color:var(--m-bad)}
+.p-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.p-ctl input[type=range]{flex:1 1 160px;accent-color:var(--accent);min-width:120px}
+.p-ctl select{font:.85rem var(--f-body);padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.kbd{font-size:.75rem;color:var(--ink-3)}
+
+/* code */
+.code{font:.82rem/1.65 var(--f-mono);color:var(--code-ink);background:var(--code-bg);overflow:auto;padding:10px 0;margin:0;counter-reset:ln}
+.code .ln{display:block;padding:0 14px 0 0;white-space:pre;border-left:3px solid transparent}
+.code .ln::before{counter-increment:ln;content:counter(ln);display:inline-block;width:3.2em;padding-right:1em;text-align:right;color:var(--code-num)}
+.code .ln.on{background:var(--code-hl);border-left-color:var(--m-active)}
+.code-head{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;font:.74rem var(--f-mono);color:var(--code-num);border-bottom:1px solid #ffffff14}
+.tk-kw{color:var(--tk-kw)} .tk-str{color:var(--tk-str)} .tk-num{color:var(--tk-num)} .tk-com{color:var(--tk-com);font-style:italic} .tk-fn{color:var(--tk-fn)}
+pre.tpl{border-radius:var(--r)}
+
+/* structures */
+.cells{display:flex;gap:4px;align-items:flex-end;width:max-content;padding-top:4px}
+.cellcol{display:grid;justify-items:center;gap:3px}
+.ptrs{display:flex;flex-direction:column-reverse;align-items:center;gap:2px;min-height:18px}
+.ptr{font:600 .68rem/1 var(--f-mono);color:var(--m-active);padding:2px 5px;border-radius:4px;background:color-mix(in srgb,var(--m-active) 14%,transparent)}
+.ptr::after{content:" ↓"}
+.ptr.cyc::after{content:none}
+.cell{min-width:40px;height:40px;padding:0 6px;display:grid;place-items:center;border:1.5px solid var(--m,var(--line));border-radius:7px;background:color-mix(in srgb,var(--m,var(--line)) 16%,var(--surface));font:600 .9rem var(--f-mono);transition:background .25s,border-color .25s,transform .25s}
+.cell.plain{background:var(--surface)}
+.idx{font:.66rem var(--f-mono);color:var(--ink-3)}
+.out{opacity:.35}
+.m-active{--m:var(--m-active)} .m-compare{--m:var(--m-compare)} .m-done{--m:var(--m-done)} .m-found{--m:var(--m-found)} .m-bad{--m:var(--m-bad)} .m-visited{--m:var(--m-visited)} .m-path{--m:var(--m-path)}
+.m-dim{opacity:.35}
+.cell.m-active{transform:translateY(-3px)}
+.bars{display:flex;gap:3px;align-items:flex-end;width:max-content;padding-top:4px}
+.bar{display:flex;flex-direction:column;justify-content:flex-end;width:34px}
+.bar .f{background:color-mix(in srgb,var(--water) 55%,transparent);border:1px solid var(--water);border-bottom:0;border-radius:4px 4px 0 0}
+.bar .b{background:color-mix(in srgb,var(--m,var(--ink-3)) 55%,var(--surface));border:1.5px solid var(--m,var(--ink-3));border-radius:4px 4px 0 0}
+.bar .b.plain{background:var(--surface-2);border-color:var(--ink-3)}
+table.grid{border-collapse:separate;border-spacing:3px}
+table.grid td,table.grid th{font:600 .82rem var(--f-mono);text-align:center}
+table.grid th{color:var(--ink-3);font-weight:400;font-size:.7rem;padding:0 4px}
+table.grid td .cell{min-width:36px;height:36px;font-size:.82rem;position:relative}
+table.grid td .cell .tag{position:absolute;top:-8px;right:-6px;font:600 .6rem/1 var(--f-mono);background:var(--m-active);color:#fff;border-radius:4px;padding:2px 3px}
+.kv{display:flex;flex-wrap:wrap;gap:6px}
+.pair{display:inline-flex;border:1.5px solid var(--m,var(--line));border-radius:7px;overflow:hidden;font:.84rem var(--f-mono);background:var(--surface)}
+.pair span{padding:5px 9px}
+.pair span:first-child{background:color-mix(in srgb,var(--m,var(--line)) 18%,var(--surface-2));font-weight:600}
+.empty{font:.82rem var(--f-mono);color:var(--ink-3);font-style:italic}
+.stack{display:flex;flex-direction:column;gap:3px;width:max-content;min-width:64px;border:1.5px solid var(--line);border-top:0;border-radius:0 0 8px 8px;padding:4px}
+.stack .cell{height:32px;min-width:56px}
+.qwrap{display:flex;align-items:center;gap:6px;width:max-content}
+.qwrap .end{font:.66rem var(--f-mono);color:var(--ink-3)}
+.lst{display:flex;align-items:flex-end;gap:0;width:max-content}
+.arrow{color:var(--ink-3);padding:0 6px 11px;font-family:var(--f-mono)}
+svg.viz{display:block;max-width:none}
+svg.viz text{font-family:var(--f-mono);fill:var(--ink)}
+svg.viz .edge{stroke:var(--ink-3);stroke-width:1.5;fill:none}
+svg.viz .node{fill:var(--surface);stroke:var(--ink-3);stroke-width:1.5}
+.textv{font:.9rem var(--f-mono);padding:6px 10px;background:var(--surface-2);border-radius:7px;width:max-content;max-width:100%;overflow-x:auto}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:.75rem;color:var(--ink-3)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px;background:var(--m)}
+
+/* dry run */
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);max-height:560px;overflow-y:auto}
+table.dry{border-collapse:collapse;width:100%;font-size:.86rem;font-variant-numeric:tabular-nums}
+table.dry th{position:sticky;top:0;background:var(--surface-2);text-align:left;font:600 .72rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);padding:10px 12px;z-index:1}
+table.dry td{padding:8px 12px;border-top:1px solid var(--line);vertical-align:top}
+table.dry td.st{font-family:var(--f-mono);font-size:.8rem;white-space:nowrap}
+table.dry td.st b{color:var(--m-active);font-weight:600}
+table.dry tr{cursor:pointer}
+table.dry tr:hover td{background:var(--surface-2)}
+table.dry tr.cur td{background:var(--accent-soft)}
+
+/* algorithms & similar */
+.algo{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;gap:14px}
+.algo .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:860px){.algo .grid2{grid-template-columns:minmax(0,1fr)}}
+.algo ol{margin:0;padding-left:20px;display:grid;gap:6px}
+.sim{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:grid;gap:8px;grid-template-rows:auto auto 1fr auto;align-content:start}
+.scard a.t{font:700 1.02rem/1.3 var(--f-display);color:var(--ink);text-decoration:none}
+.scard a.t:hover{color:var(--accent)}
+.scard .row{display:flex;gap:6px;flex-wrap:wrap}
+.scard .hintbox{font-size:.9rem;padding:10px 12px;background:var(--surface-2);border-radius:8px}
+footer{padding-top:48px;color:var(--ink-3);font-size:.8rem}
+</style>
+
+<div class="wrap">
+  <header class="top" id="top"></header>
+  <nav class="toc" aria-label="Sections"><ul>
+    <li><a href="#problem">Problem</a></li><li><a href="#approach">Approach</a></li><li><a href="#visualize">Visualizer</a></li>
+    <li><a href="#dryrun">Dry run</a></li><li><a href="#algorithms">Algorithms</a></li><li><a href="#similar">Similar problems</a></li>
+  </ul></nav>
+  <section id="problem"></section>
+  <section id="approach"></section>
+  <section id="visualize"></section>
+  <section id="dryrun"></section>
+  <section id="algorithms"></section>
+  <section id="similar"></section>
+  <footer id="foot"></footer>
+</div>
+
+<script>
+/* dsa-visualizer trace core — shared by the page and by scripts/build.js (no DOM here). */
+(function (root) {
+  const MAX_STEPS = 1500;
+  const TYPES = ['array', 'string', 'bars', 'grid', 'map', 'set', 'stack', 'queue', 'tree', 'list', 'graph', 'text'];
+  const MARKS = ['active', 'compare', 'done', 'found', 'bad', 'dim', 'visited', 'path'];
+
+  // Code lines may end with a tag comment like  `# @loop`  or  `// @loop`.
+  // Tags are stripped for display and let solve() refer to lines by name.
+  function parseCode(src) {
+    const raw = String(src || '').replace(/\t/g, '    ').replace(/^\s*\n/, '').replace(/\s+$/, '');
+    const lines = raw.split('\n');
+    const tags = {};
+    const out = lines.map((ln, i) => {
+      const m = ln.match(/\s*(?:#|\/\/)\s*@([A-Za-z_][\w-]*)\s*$/);
+      if (m) { tags[m[1]] = i + 1; return ln.slice(0, m.index); }
+      return ln;
+    });
+    // de-indent common leading whitespace
+    const ind = Math.min(...out.filter(l => l.trim()).map(l => l.match(/^ */)[0].length));
+    return { lines: out.map(l => l.slice(isFinite(ind) ? ind : 0)), tags };
+  }
+
+  function clone(v) {
+    if (v === undefined) return undefined;
+    try { return structuredClone(v); } catch (e) { return JSON.parse(JSON.stringify(v)); }
+  }
+
+  function buildTree(arr) {
+    if (!arr || !arr.length || arr[0] == null) return null;
+    let id = 0;
+    const mk = v => ({ id: id++, val: v, left: null, right: null });
+    const r = mk(arr[0]); const q = [r]; let i = 1;
+    while (q.length && i < arr.length) {
+      const n = q.shift();
+      if (i < arr.length && arr[i] != null) { n.left = mk(arr[i]); q.push(n.left); } i++;
+      if (i < arr.length && arr[i] != null) { n.right = mk(arr[i]); q.push(n.right); } i++;
+    }
+    return r;
+  }
+  function treeToArray(r) {
+    const out = []; const q = [r];
+    while (q.length) { const n = q.shift(); if (n) { out.push(n.val); q.push(n.left, n.right); } else out.push(null); }
+    while (out.length && out[out.length - 1] == null) out.pop();
+    return out;
+  }
+  function buildList(arr, cyclePos = -1) {
+    const nodes = (arr || []).map((v, i) => ({ id: i, val: v, next: null }));
+    nodes.forEach((n, i) => { n.next = nodes[i + 1] || null; });
+    if (cyclePos >= 0 && nodes.length) nodes[nodes.length - 1].next = nodes[cyclePos];
+    return nodes[0] || null;
+  }
+  function listToArray(h) {
+    const out = []; const seen = new Set();
+    while (h && !seen.has(h) && out.length < 10000) { seen.add(h); out.push(h.val); h = h.next; }
+    return out;
+  }
+
+  const DATA_KEY = { array: 'values', string: 'values', bars: 'values', stack: 'values', queue: 'values', set: 'values', grid: 'cells', map: 'entries', tree: 'root', text: 'value' };
+  function view(type) {
+    return function (name, data, opts) {
+      const o = { type, name };
+      if (type === 'graph') Object.assign(o, data || {});
+      else if (type === 'list') { if (Array.isArray(data)) o.values = data; else o.head = data; }
+      else if (type === 'string' && typeof data === 'string') o.values = data.split('');
+      else o[DATA_KEY[type]] = data;
+      return Object.assign(o, opts || {});
+    };
+  }
+
+  function runTrace(spec, input) {
+    const code = parseCode(spec.code);
+    const steps = []; const warnings = []; let truncated = false;
+    let lastShow = [], lastVars = {};
+    const T = {
+      step(a, msg, extra) {
+        const o = (a && typeof a === 'object') ? a : Object.assign({ line: a, msg }, extra || {});
+        if (steps.length >= MAX_STEPS) { truncated = true; return; }
+        let line = o.line;
+        if (typeof line === 'string') {
+          if (!(line in code.tags)) warnings.push(`unknown line tag "@${line}"`);
+          line = code.tags[line] || 0;
+        }
+        if (typeof line === 'number' && (line < 0 || line > code.lines.length)) warnings.push(`line ${line} out of range`);
+        if (o.show !== undefined) lastShow = clone(Array.isArray(o.show) ? o.show : [o.show]).filter(Boolean);
+        if (o.vars !== undefined) lastVars = clone(o.vars);
+        for (const s of lastShow) if (!TYPES.includes(s.type)) warnings.push(`unknown structure type "${s.type}"`);
+        steps.push({ line: line || 0, msg: String(o.msg == null ? '' : o.msg), vars: lastVars, show: lastShow, final: !!o.final });
+      },
+      buildTree, treeToArray, buildList, listToArray,
+    };
+    for (const t of TYPES) T[t] = view(t);
+    let result, error = null;
+    try { result = spec.solve(clone(input), T); }
+    catch (e) { error = (e && e.message) || String(e); }
+    return { steps, result, error, truncated, warnings: [...new Set(warnings)], code };
+  }
+
+  function normalize(v) {
+    if (v && typeof v === 'object' && 'val' in v && ('left' in v || 'right' in v)) return treeToArray(v);
+    if (v && typeof v === 'object' && 'val' in v && 'next' in v) return listToArray(v);
+    return v;
+  }
+  function sameResult(spec, got, expected) {
+    got = normalize(got);
+    if (typeof spec.compare === 'function') { try { return !!spec.compare(got, expected); } catch (e) { return false; } }
+    if (typeof got === 'number' && typeof expected === 'number') return Math.abs(got - expected) < 1e-6;
+    return JSON.stringify(got) === JSON.stringify(expected);
+  }
+
+  const api = { MAX_STEPS, TYPES, MARKS, parseCode, clone, runTrace, sameResult, normalize, buildTree, treeToArray, buildList, listToArray };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.DSACore = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+const fmt = v => v === Infinity ? '+∞' : v === -Infinity ? '−∞' : v;
+
+window.PROBLEM = {
+  title: 'Median of Two Sorted Arrays',
+  id: 4,
+  source: 'LeetCode',
+  url: 'https://leetcode.com/problems/median-of-two-sorted-arrays/description/',
+  difficulty: 'Hard',
+  tags: ['Array', 'Binary Search', 'Divide and Conquer'],
+  summary: `<p>You're given two arrays, <code>nums1</code> (length <code>m</code>) and <code>nums2</code> (length <code>n</code>), each already sorted in ascending order. Imagine merging them into one sorted list: return the median of that list.</p>
+    <p>If the total length is odd the median is the middle element; if it's even, it's the average of the two middle elements.</p>
+    <p>The catch: the expected running time is <strong>O(log(m + n))</strong>, so you can't actually merge them.</p>`,
+  constraints: ['nums1.length == m, nums2.length == n', '0 ≤ m, n ≤ 1000', '1 ≤ m + n ≤ 2000', '−10⁶ ≤ nums1[i], nums2[i] ≤ 10⁶'],
+  examples: [
+    { label: 'Hand-made (odd, 11 items)', input: { nums1: [1, 3, 8, 9, 15], nums2: [7, 11, 18, 19, 21, 25] }, expected: 11,
+      note: 'Merged: 1 3 7 8 9 <b>11</b> 15 18 19 21 25. The search first cuts too far left in <code>nums1</code>, then corrects.' },
+    { label: 'Hand-made (swap + move left)', input: { nums1: [1, 2, 3, 4, 8], nums2: [5, 6, 7] }, expected: 4.5,
+      note: 'nums1 is longer, so the arrays are swapped first. Merged: 1 2 3 <b>4 5</b> 6 7 8 → (4 + 5) / 2 = 4.5.' },
+    { label: 'Example 1', input: { nums1: [1, 3], nums2: [2] }, expected: 2,
+      note: 'Merged: 1 <b>2</b> 3 → median 2.' },
+    { label: 'Example 2', input: { nums1: [1, 2], nums2: [3, 4] }, expected: 2.5,
+      note: 'Merged: 1 <b>2 3</b> 4 → (2 + 3) / 2 = 2.5. The whole of nums1 ends up in the left half.' },
+  ],
+  inputs: [{ name: 'nums1', type: 'int[]' }, { name: 'nums2', type: 'int[]' }],
+  maxSize: 20,
+  compare: (got, exp) => Math.abs(got - exp) < 1e-9,
+  validate: ({ nums1, nums2 }) => {
+    if (!Array.isArray(nums1) || !Array.isArray(nums2)) return 'both inputs must be arrays';
+    if (nums1.length + nums2.length === 0) return 'at least one array must be non-empty';
+    for (const a of [nums1, nums2]) {
+      if (a.some(x => typeof x !== 'number')) return 'arrays must contain numbers';
+      for (let k = 1; k < a.length; k++) if (a[k] < a[k - 1]) return 'each array must be sorted ascending';
+    }
+    return null;
+  },
+  reference: ({ nums1, nums2 }) => {
+    const c = [...nums1, ...nums2].sort((x, y) => x - y), L = c.length;
+    return L % 2 ? c[(L - 1) / 2] : (c[L / 2 - 1] + c[L / 2]) / 2;
+  },
+
+  hints: [
+    'The median splits the merged list into a <strong>left half</strong> and a <strong>right half</strong> of equal size (left gets the extra one if odd). Can you describe that split without merging?',
+    'Any split of the merged list = a cut in <code>nums1</code> at <code>i</code> plus a cut in <code>nums2</code> at <code>j</code>, with <code>i + j = (m + n + 1) // 2</code>. Once you pick <code>i</code>, <code>j</code> is forced.',
+    'The cut is correct exactly when everything on the left is ≤ everything on the right. Since each array is sorted, you only need to check the cross pairs: <code>A[i−1] ≤ B[j]</code> and <code>B[j−1] ≤ A[i]</code>.',
+    'If <code>A[i−1] &gt; B[j]</code>, you took too much of A — move <code>i</code> left. If <code>B[j−1] &gt; A[i]</code>, take more of A — move <code>i</code> right. That is a binary search on <code>i</code> over the shorter array.',
+  ],
+  insight: 'You don\'t need the merged array — only the <em>cut</em> that splits it in half. Choosing how many elements <code>i</code> come from the shorter array fixes everything else, and whether <code>i</code> is too big or too small is decided by just two comparisons, so you can binary-search it.',
+  approaches: [
+    { name: 'Merge then pick', idea: 'Merge the two arrays with two pointers (or concatenate and sort) and read the middle.', time: 'O(m + n)', space: 'O(m + n)', tradeoff: 'Simple and accepted in practice, but misses the required log bound.' },
+    { name: 'Two pointers, no storage', idea: 'Walk the merge only up to the middle, remembering the last two values seen.', time: 'O(m + n)', space: 'O(1)', tradeoff: 'Saves memory, still linear.' },
+    { name: 'k-th smallest by elimination', idea: 'To find the k-th smallest, compare <code>A[k/2−1]</code> and <code>B[k/2−1]</code> and discard the smaller one\'s first k/2 elements; recurse.', time: 'O(log(m + n))', space: 'O(1) iterative', tradeoff: 'Meets the bound but has fiddly index handling; call it twice for even totals.' },
+    { name: 'Binary search on the partition', idea: 'Binary-search how many elements of the shorter array go to the left half; check the two cross pairs to steer.', time: 'O(log(min(m, n)))', space: 'O(1)', best: true },
+  ],
+
+  language: 'Python',
+  code: `
+def findMedianSortedArrays(nums1, nums2):
+    A, B = nums1, nums2
+    if len(A) > len(B):
+        A, B = B, A                         # @swap
+    m, n = len(A), len(B)
+    half = (m + n + 1) // 2
+    lo, hi = 0, m                           # @init
+    while lo <= hi:
+        i = (lo + hi) // 2                  # @mid
+        j = half - i
+        a_left  = A[i - 1] if i > 0 else float('-inf')
+        a_right = A[i]     if i < m else float('inf')
+        b_left  = B[j - 1] if j > 0 else float('-inf')
+        b_right = B[j]     if j < n else float('inf')   # @edges
+        if a_left <= b_right and b_left <= a_right:     # @check
+            if (m + n) % 2:
+                return float(max(a_left, b_left))       # @odd
+            return (max(a_left, b_left) + min(a_right, b_right)) / 2   # @even
+        elif a_left > b_right:
+            hi = i - 1                      # @left
+        else:
+            lo = i + 1                      # @right
+`,
+  solve({ nums1, nums2 }, T) {
+    let A = nums1, B = nums2, swapped = false;
+    if (A.length > B.length) { [A, B] = [B, A]; swapped = true; }
+    const m = A.length, n = B.length, half = Math.floor((m + n + 1) / 2);
+    let lo = 0, hi = m, i = null, j = null, aL, aR, bL, bR;
+    const nameA = swapped ? 'A = nums2 (shorter)' : 'A = nums1 (shorter)';
+    const nameB = swapped ? 'B = nums1' : 'B = nums2';
+    const vars = () => ({ m, n, half, lo, hi, i: i ?? '—', j: j ?? '—',
+      a_left: fmt(aL ?? '—'), a_right: fmt(aR ?? '—'), b_left: fmt(bL ?? '—'), b_right: fmt(bR ?? '—') });
+    const view = (extraA = {}, extraB = {}) => {
+      const mA = {}, mB = {};
+      if (i !== null) {
+        for (let k = 0; k < i; k++) mA[k] = 'visited';
+        for (let k = 0; k < j; k++) mB[k] = 'visited';
+      }
+      Object.assign(mA, extraA); Object.assign(mB, extraB);
+      const pA = { lo, hi }; if (i !== null) pA.i = i;
+      const pB = {}; if (j !== null) pB.j = j;
+      const views = [
+        T.array(nameA, A, { pointers: pA, marks: mA }),
+        T.array(nameB, B, { pointers: pB, marks: mB }),
+      ];
+      if (i !== null) views.push(T.text('left half | right half',
+        `[${[...A.slice(0, i), ...B.slice(0, j)].sort((x, y) => x - y).join(', ')}]  |  [${[...A.slice(i), ...B.slice(j)].sort((x, y) => x - y).join(', ')}]`));
+      return views;
+    };
+    if (swapped) T.step('swap', `nums1 has ${nums1.length} items and nums2 has ${nums2.length}; swap so we binary-search the shorter one — fewer steps and j = half − i can never go out of range.`, { vars: vars(), show: view() });
+    T.step('init', `Total ${m + n} items, so the left half must hold half = (${m}+${n}+1)//2 = ${half}. i = how many of those come from A, anywhere in [lo, hi] = [0, ${m}].`, { vars: vars(), show: view() });
+    while (lo <= hi) {
+      i = Math.floor((lo + hi) / 2); j = half - i;
+      aL = i > 0 ? A[i - 1] : -Infinity; aR = i < m ? A[i] : Infinity;
+      bL = j > 0 ? B[j - 1] : -Infinity; bR = j < n ? B[j] : Infinity;
+      const edgeA = {}, edgeB = {};
+      if (i > 0) edgeA[i - 1] = 'active'; if (i < m) edgeA[i] = 'compare';
+      if (j > 0) edgeB[j - 1] = 'active'; if (j < n) edgeB[j] = 'compare';
+      T.step('mid', `Try i = (${lo}+${hi})//2 = ${i} items from A, so j = ${half} − ${i} = ${j} items from B fill the left half.`, { vars: vars(), show: view(edgeA, edgeB) });
+      T.step('edges', `Border values: A gives ${fmt(aL)} | ${fmt(aR)}, B gives ${fmt(bL)} | ${fmt(bR)}${(i === 0 || i === m || j === 0 || j === n) ? ' (±∞ stands in for an empty side so the checks still work)' : ''}.`, { vars: vars(), show: view(edgeA, edgeB) });
+      if (aL <= bR && bL <= aR) {
+        T.step('check', `Both cross checks pass: a_left ${fmt(aL)} ≤ b_right ${fmt(bR)} and b_left ${fmt(bL)} ≤ a_right ${fmt(aR)}. Every left item ≤ every right item — this is the median cut.`, { vars: vars(), show: view(
+          Object.fromEntries(Object.keys(edgeA).map(k => [k, 'found'])), Object.fromEntries(Object.keys(edgeB).map(k => [k, 'found']))) });
+        const lmax = Math.max(aL, bL);
+        const fA = {}, fB = {};
+        if (aL === lmax && i > 0) fA[i - 1] = 'found'; else if (j > 0) fB[j - 1] = 'found';
+        if ((m + n) % 2) {
+          T.step('odd', `Total is odd, so the left half has the extra item and the median is its largest: max(${fmt(aL)}, ${fmt(bL)}) = ${lmax}.`, { vars: vars(), show: view(fA, fB) });
+          return lmax;
+        }
+        const rmin = Math.min(aR, bR);
+        if (aR === rmin && i < m) fA[i] = 'found'; else if (j < n) fB[j] = 'found';
+        const ans = (lmax + rmin) / 2;
+        T.step('even', `Total is even: median = (largest on the left + smallest on the right) / 2 = (${lmax} + ${rmin}) / 2 = ${ans}.`, { vars: vars(), show: view(fA, fB) });
+        return ans;
+      } else if (aL > bR) {
+        const bad = Object.assign({}, edgeA, { [i - 1]: 'bad' }), badB = Object.assign({}, edgeB); if (j < n) badB[j] = 'bad';
+        T.step('check', `a_left ${fmt(aL)} > b_right ${fmt(bR)}: an item from A on the left is bigger than one on the right, so we took too many from A.`, { vars: vars(), show: view(bad, badB) });
+        hi = i - 1;
+        T.step('left', `Move the cut in A left: hi = i − 1 = ${hi}. Search range is now [${lo}, ${hi}].`, { vars: vars(), show: view() });
+      } else {
+        const bad = Object.assign({}, edgeA), badB = Object.assign({}, edgeB, { [j - 1]: 'bad' }); if (i < m) bad[i] = 'bad';
+        T.step('check', `b_left ${fmt(bL)} > a_right ${fmt(aR)}: B contributed too much to the left, so A must contribute more.`, { vars: vars(), show: view(bad, badB) });
+        lo = i + 1;
+        T.step('right', `Move the cut in A right: lo = i + 1 = ${lo}. Search range is now [${lo}, ${hi}].`, { vars: vars(), show: view() });
+      }
+    }
+    throw new Error('inputs not sorted');
+  },
+
+  algorithms: [
+    {
+      name: 'Binary search on a partition', category: 'Technique',
+      tagline: 'Search over where to cut, not over values — steer by checking the two items on each side of the cut.',
+      explain: `<p>Instead of looking for a value, binary-search a <em>split point</em>. For two sorted arrays, choosing <code>i</code> items from A forces <code>j = half − i</code> from B, and the split is valid iff the four border values satisfy <code>A[i−1] ≤ B[j]</code> and <code>B[j−1] ≤ A[i]</code>.</p>
+        <p>The search is monotone: if <code>A[i−1] &gt; B[j]</code> every larger <code>i</code> is also wrong (it only pushes bigger A values left), so throw away the right side; symmetrically for the other check. That monotonicity is what makes binary search legal.</p>
+        <p>Using ±∞ for empty sides removes all the edge-case branches: an empty left side never violates "≤", an empty right side never does either.</p>`,
+      steps: [
+        'Make A the shorter array; set <code>half = (m + n + 1) // 2</code>, <code>lo = 0</code>, <code>hi = m</code>.',
+        'Pick <code>i = (lo + hi) // 2</code>, <code>j = half − i</code>.',
+        'Read the four border values, substituting −∞ / +∞ at the ends.',
+        'If both cross checks hold, compute the answer from <code>max(lefts)</code> and <code>min(rights)</code>.',
+        'Else if <code>A[i−1] &gt; B[j]</code>, set <code>hi = i − 1</code>; otherwise <code>lo = i + 1</code>.',
+      ],
+      whenToUse: [
+        'Two (or more) sorted sequences and you need an order statistic — median, k-th smallest — in log time.',
+        'The problem says O(log(m + n)) and merging is the obvious linear solution.',
+        'Any "choose a split so that everything left ≤ everything right" question.',
+      ],
+      pitfalls: [
+        'Searching the longer array — <code>j</code> can go negative or past <code>n</code>.',
+        '<code>hi = m</code>, not <code>m − 1</code>: taking all of A is a valid cut.',
+        'Forgetting that the left half gets the extra item when the total is odd (the <code>+1</code> in <code>half</code>).',
+      ],
+      complexity: 'O(log(min(m, n))) time · O(1) space',
+      template: `
+def kth_partition(A, B, k):            # left part must hold k items
+    if len(A) > len(B):
+        A, B = B, A
+    lo, hi = max(0, k - len(B)), min(k, len(A))
+    while lo <= hi:
+        i = (lo + hi) // 2
+        j = k - i
+        a_l = A[i-1] if i > 0 else float('-inf')
+        a_r = A[i]   if i < len(A) else float('inf')
+        b_l = B[j-1] if j > 0 else float('-inf')
+        b_r = B[j]   if j < len(B) else float('inf')
+        if a_l <= b_r and b_l <= a_r:
+            return max(a_l, b_l)       # k-th smallest overall
+        elif a_l > b_r:
+            hi = i - 1
+        else:
+            lo = i + 1
+`,
+    },
+    {
+      name: 'k-th smallest by halving (divide & conquer)', category: 'Alternative approach',
+      tagline: 'Compare the k/2-th items of both arrays and discard k/2 items that cannot be the answer.',
+      explain: `<p>To find the k-th smallest of A and B, compare <code>A[k/2 − 1]</code> with <code>B[k/2 − 1]</code>. If A's is smaller, none of A's first k/2 items can be the k-th smallest (at most k − 2 items are smaller than any of them), so drop them and look for the (k − k/2)-th in what remains.</p>
+        <p>Each round removes about half of k, so it takes O(log k) rounds. For the median, call it for the middle one (odd) or the middle two (even).</p>`,
+      steps: [
+        'If one array is empty, return the k-th item of the other.',
+        'If <code>k == 1</code>, return the smaller of the two first items.',
+        'Let <code>p = min(k // 2, len(A))</code>, <code>q = min(k // 2, len(B))</code>.',
+        'If <code>A[p−1] ≤ B[q−1]</code> drop A\'s first p items and set <code>k −= p</code>; else drop B\'s first q.',
+      ],
+      whenToUse: ['k-th smallest across two sorted arrays for arbitrary k.', 'When the recursive "throw away half" argument is easier for you to reason about than partitions.'],
+      pitfalls: ['An array shorter than k/2 — clamp the step.', 'Slicing copies arrays in Python; pass start offsets instead.'],
+      complexity: 'O(log(m + n)) time · O(1) space with offsets',
+      template: `
+def kth(A, B, k):                  # 1-indexed k
+    a = b = 0
+    while True:
+        if a == len(A): return B[b + k - 1]
+        if b == len(B): return A[a + k - 1]
+        if k == 1: return min(A[a], B[b])
+        p = min(k // 2, len(A) - a)
+        q = min(k // 2, len(B) - b)
+        if A[a + p - 1] <= B[b + q - 1]:
+            a += p; k -= p
+        else:
+            b += q; k -= q
+`,
+    },
+  ],
+
+  similar: [
+    { title: 'Merge Sorted Array', url: 'https://leetcode.com/problems/merge-sorted-array/', difficulty: 'Easy', technique: 'Two pointers',
+      twist: 'Actually merge the two sorted arrays, in place — the linear baseline for this problem.',
+      hint: 'Fill from the back so you never overwrite values of nums1 you still need.' },
+    { title: 'Find K Closest Elements', url: 'https://leetcode.com/problems/find-k-closest-elements/', difficulty: 'Medium', technique: 'Binary search on a window start',
+      twist: 'One array, and you binary-search the left edge of a length-k window instead of a cut between two arrays.',
+      hint: 'Compare <code>x − arr[mid]</code> with <code>arr[mid + k] − x</code> to decide which way the window should slide.' },
+    { title: 'Kth Smallest Element in a Sorted Matrix', url: 'https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/', difficulty: 'Medium', technique: 'Binary search on value',
+      twist: 'n sorted rows instead of two arrays, and a k-th order statistic instead of the median.',
+      hint: 'Binary-search the answer value; for a candidate, count how many entries are ≤ it by walking from a corner.' },
+    { title: 'Find K Pairs with Smallest Sums', url: 'https://leetcode.com/problems/find-k-pairs-with-smallest-sums/', difficulty: 'Medium', technique: 'Heap',
+      twist: 'Still two sorted arrays, but you want the k smallest pair sums rather than one order statistic.',
+      hint: 'Start with (nums1[i], nums2[0]) for each i in a min-heap; when you pop a pair, push its neighbour in nums2.' },
+    { title: 'Split Array Largest Sum', url: 'https://leetcode.com/problems/split-array-largest-sum/', difficulty: 'Hard', technique: 'Binary search on answer',
+      twist: 'Choose cut positions to balance sums — a different "search the split" problem where the monotone check is greedy.',
+      hint: 'Guess a maximum allowed sum; greedily count how many pieces you need. Fewer than k pieces means the guess can shrink.' },
+    { title: 'Find Median from Data Stream', url: 'https://leetcode.com/problems/find-median-from-data-stream/', difficulty: 'Hard', technique: 'Two heaps',
+      twist: 'Numbers arrive one at a time and nothing is sorted — keep the left/right halves live.',
+      hint: 'A max-heap holds the left half and a min-heap the right half; rebalance so their sizes differ by at most one.' },
+  ],
+};
+
+</script>
+<script>
+(function(){
+"use strict";
+const P = window.PROBLEM, C = window.DSACore;
+const $ = (s, r=document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs||{})){
+    if (v == null || v === false) continue;
+    if (k === 'html') e.innerHTML = v; else if (k === 'text') e.textContent = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (k === 'style' && typeof v === 'object') Object.assign(e.style, v);
+    else e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const k of kids.flat()) if (k != null && k !== false) e.append(k.nodeType ? k : document.createTextNode(k));
+  return e;
+}
+function fmt(v){
+  if (v === null || v === undefined) return '∅';
+  if (v === Infinity) return '∞'; if (v === -Infinity) return '−∞';
+  if (typeof v === 'number') return Number.isInteger(v) ? String(v) : String(Math.round(v*1e4)/1e4);
+  if (typeof v === 'string') return v === '' ? '""' : v;
+  if (typeof v === 'boolean') return v ? 'true' : 'false';
+  if (v instanceof Map) return '{' + [...v].map(([a,b]) => fmt(a)+': '+fmt(b)).join(', ') + '}';
+  if (v instanceof Set) return '{' + [...v].map(fmt).join(', ') + '}';
+  if (Array.isArray(v)) return '[' + v.map(fmt).join(', ') + ']';
+  if (typeof v === 'object' && 'val' in v) return 'node(' + fmt(v.val) + ')';
+  try { return JSON.stringify(v); } catch(e){ return String(v); }
+}
+const cellTxt = v => v === '' ? '' : fmt(v);
+const markCls = m => m ? ('m-' + m) : 'plain';
+const getMark = (marks, k) => marks ? (marks instanceof Map ? marks.get(k) : marks[k]) : undefined;
+
+/* ---------- syntax highlight ---------- */
+const KW = new Set(('def return if elif else for while in not and or is None True False class import from as with try except finally raise pass break continue lambda yield global nonlocal self '+
+  'int long double float char bool boolean void public private protected static final new const let var function auto vector string unordered_map map set unordered_set pair queue deque stack priority_queue struct nullptr null true false this typeof instanceof switch case default do sizeof template typename using namespace std List ArrayList HashMap HashSet Map Set Integer String Deque ArrayDeque PriorityQueue LinkedList range len min max').split(' '));
+function highlight(line){
+  const re = /(#.*$|\/\/.*$)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(\b\d+(?:\.\d+)?\b)|([A-Za-z_]\w*)(?=\s*\()|([A-Za-z_]\w*)/g;
+  let out = '', last = 0, m;
+  while ((m = re.exec(line))){
+    out += esc(line.slice(last, m.index)); last = re.lastIndex;
+    if (m[1]) out += '<span class="tk-com">'+esc(m[1])+'</span>';
+    else if (m[2]) out += '<span class="tk-str">'+esc(m[2])+'</span>';
+    else if (m[3]) out += '<span class="tk-num">'+m[3]+'</span>';
+    else if (m[4]) out += KW.has(m[4]) ? '<span class="tk-kw">'+m[4]+'</span>' : '<span class="tk-fn">'+m[4]+'</span>';
+    else out += KW.has(m[5]) ? '<span class="tk-kw">'+m[5]+'</span>' : esc(m[5]);
+  }
+  return out + esc(line.slice(last));
+}
+function codeBlock(lines, cls){
+  const pre = el('pre', {class:'code '+(cls||'')});
+  pre.innerHTML = lines.map(l => '<span class="ln">'+(highlight(l)||' ')+'</span>').join('');
+  return pre;
+}
+
+/* ---------- structure renderers ---------- */
+function ptrMap(ptrs){ // {name: index} -> {index: [names]}
+  const out = {}; for (const [n, i] of Object.entries(ptrs||{})) { if (i == null) continue; const k = Array.isArray(i) ? i.join(',') : String(i); (out[k] = out[k] || []).push(n); } return out;
+}
+function ptrCol(names){ return el('div', {class:'ptrs'}, (names||[]).map(n => el('span', {class:'ptr', text:n}))); }
+const R = {
+  array(s){
+    const vals = s.values || []; const P2 = ptrMap(s.pointers); const rg = s.range;
+    const row = el('div', {class:'cells'});
+    const anyPtr = Object.keys(P2).length > 0;
+    vals.forEach((v, i) => {
+      const mk = getMark(s.marks, i);
+      const out = rg && (i < rg[0] || i > rg[1]);
+      row.append(el('div', {class:'cellcol'+(out?' out':'')}, anyPtr ? ptrCol(P2[i]) : null,
+        el('div', {class:'cell '+markCls(mk)}, cellTxt(v)), s.hideIndex ? null : el('div', {class:'idx', text:(s.indexLabels && s.indexLabels[i]) != null ? s.indexLabels[i] : i})));
+    });
+    if (!vals.length) return el('div', {class:'empty', text:'empty'});
+    // pointers past the end (e.g. i == n)
+    const extra = Object.keys(P2).filter(k => +k >= vals.length || +k < 0);
+    extra.forEach(k => row.append(el('div', {class:'cellcol'}, ptrCol(P2[k]), el('div', {class:'cell plain', style:{borderStyle:'dashed', opacity:.5}}, ''), el('div', {class:'idx', text:k}))));
+    return el('div', {class:'scroll'}, row);
+  },
+  string(s){ return R.array(s); },
+  bars(s){
+    const vals = s.values || []; const fill = s.fill || []; const P2 = ptrMap(s.pointers);
+    const max = Math.max(1, ...vals.map((v,i) => (+v||0) + (+fill[i]||0)));
+    const unit = Math.max(6, Math.min(28, 150 / max));
+    const row = el('div', {class:'bars'});
+    const anyPtr = Object.keys(P2).length > 0;
+    vals.forEach((v, i) => {
+      const mk = getMark(s.marks, i);
+      row.append(el('div', {class:'cellcol'}, anyPtr ? ptrCol(P2[i]) : null,
+        el('div', {class:'bar', style:{height:(max*unit)+'px'}},
+          fill[i] ? el('div', {class:'f', style:{height:(fill[i]*unit)+'px'}, title:'fill '+fill[i]}) : null,
+          el('div', {class:'b '+markCls(mk), style:{height:(Math.max(0,+v||0)*unit)+'px'}})),
+        el('div', {class:'idx', text:fmt(v)}), el('div', {class:'idx', text:'#'+i})));
+    });
+    return el('div', {class:'scroll'}, row);
+  },
+  grid(s){
+    const cells = s.cells || []; const P2 = ptrMap(s.pointers);
+    const t = el('table', {class:'grid'});
+    if (s.colLabels) t.append(el('tr', {}, el('th'), s.colLabels.map(c => el('th', {text:fmt(c)}))));
+    cells.forEach((row, r) => {
+      t.append(el('tr', {}, el('th', {text: s.rowLabels ? fmt(s.rowLabels[r]) : (s.hideIndex ? '' : r)}),
+        (row||[]).map((v, c) => { const mk = getMark(s.marks, r+','+c); const tag = P2[r+','+c];
+          return el('td', {}, el('div', {class:'cell '+markCls(mk)}, cellTxt(v), tag ? el('span', {class:'tag', text:tag.join(',')}) : null)); })));
+    });
+    if (!s.colLabels && cells[0] && !s.hideIndex) t.prepend(el('tr', {}, el('th'), cells[0].map((_, c) => el('th', {text:c}))));
+    return el('div', {class:'scroll'}, t);
+  },
+  map(s){
+    let e = s.entries; if (e instanceof Map) e = [...e]; else if (!Array.isArray(e)) e = Object.entries(e || {});
+    if (!e.length) return el('div', {class:'empty', text:'{ } empty'});
+    return el('div', {class:'kv'}, e.map(([k, v]) => el('span', {class:'pair '+markCls(getMark(s.marks, String(k)) || getMark(s.marks, k))}, el('span', {text:fmt(k)}), el('span', {text:fmt(v)}))));
+  },
+  set(s){
+    let v = s.values; if (v instanceof Set) v = [...v]; v = v || [];
+    if (!v.length) return el('div', {class:'empty', text:'{ } empty'});
+    return el('div', {class:'kv'}, v.map(x => el('span', {class:'pair '+markCls(getMark(s.marks, String(x)) || getMark(s.marks, x))}, el('span', {text:fmt(x)}))));
+  },
+  stack(s){
+    const v = s.values || [];
+    const box = el('div', {class:'stack'});
+    if (!v.length) box.append(el('div', {class:'empty', text:'empty', style:{padding:'6px'}}));
+    for (let i = v.length - 1; i >= 0; i--) box.append(el('div', {class:'cell '+markCls(getMark(s.marks, i))}, fmt(v[i])));
+    return el('div', {class:'scroll'}, el('div', {class:'idx', text:'top ↓', style:{marginBottom:'2px'}}), box);
+  },
+  queue(s){
+    const v = s.values || [];
+    const row = el('div', {class:'qwrap'}, el('span', {class:'end', text:'front →'}));
+    if (!v.length) row.append(el('span', {class:'empty', text:'empty'}));
+    v.forEach((x, i) => row.append(el('div', {class:'cell '+markCls(getMark(s.marks, i))}, fmt(x))));
+    row.append(el('span', {class:'end', text:'← back'}));
+    return el('div', {class:'scroll'}, row);
+  },
+  list(s){
+    let nodes = [], cycleTo = null;
+    if (s.values) { nodes = s.values.map((v, i) => ({id:i, val:v})); if (s.cycleTo != null) cycleTo = s.cycleTo; }
+    else { const seen = new Map(); let h = s.head;
+      while (h && nodes.length < 60) { if (seen.has(h)) { cycleTo = seen.get(h); break; } seen.set(h, h.id != null ? h.id : nodes.length); nodes.push({id: h.id != null ? h.id : nodes.length, val: h.val}); h = h.next; } }
+    const P2 = ptrMap(Object.fromEntries(Object.entries(s.pointers||{}).map(([k, v]) => [k, v && typeof v === 'object' ? v.id : v])));
+    const anyPtr = Object.keys(P2).length > 0;
+    const row = el('div', {class:'lst'});
+    nodes.forEach((n, i) => {
+      row.append(el('div', {class:'cellcol'}, anyPtr ? ptrCol(P2[n.id]) : null, el('div', {class:'cell '+markCls(getMark(s.marks, n.id))}, fmt(n.val)), el('div', {class:'idx', text:'#'+n.id})));
+      row.append(el('span', {class:'arrow', text:'→'}));
+    });
+    if (cycleTo != null) row.append(el('span', {class:'ptr cyc', style:{marginBottom:'22px'}, text:'↺ back to #'+cycleTo}));
+    else row.append(el('div', {class:'cellcol'}, anyPtr ? ptrCol(P2['null']) : null, el('span', {class:'empty', style:{padding:'0 0 22px'}, text:'null'})));
+    return el('div', {class:'scroll'}, row);
+  },
+  tree(s){
+    const root = s.root; if (!root) return el('div', {class:'empty', text:'empty tree'});
+    const pos = []; let x = 0, maxD = 0;
+    (function walk(n, d){ if (!n || d > 12) return; walk(n.left, d+1); pos.push({n, x:x++, d}); maxD = Math.max(maxD, d); walk(n.right, d+1); })(root, 0);
+    const W = 46, H = 62, pad = 26; const byNode = new Map(pos.map(p => [p.n, p]));
+    const w = Math.max(1, x) * W + pad, h = (maxD + 1) * H + 20;
+    const ptrs = ptrMap(Object.fromEntries(Object.entries(s.pointers||{}).map(([k, v]) => [k, v && typeof v === 'object' ? v.id : v])));
+    let g = '';
+    for (const p of pos) for (const c of [p.n.left, p.n.right]) if (c && byNode.has(c)) { const q = byNode.get(c);
+      g += `<line class="edge" x1="${p.x*W+W/2+pad/2}" y1="${p.d*H+30}" x2="${q.x*W+W/2+pad/2}" y2="${q.d*H+30}"/>`; }
+    for (const p of pos) { const id = p.n.id != null ? p.n.id : p.n.val; const mk = getMark(s.marks, id); const cx = p.x*W+W/2+pad/2, cy = p.d*H+30;
+      const col = mk ? `var(--m-${mk})` : 'var(--ink-3)';
+      g += `<circle cx="${cx}" cy="${cy}" r="17" style="fill:color-mix(in srgb, ${col} ${mk?20:0}%, var(--surface));stroke:${col};stroke-width:${mk?2.2:1.5}"/>`;
+      g += `<text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="12" font-weight="600">${esc(fmt(p.n.val))}</text>`;
+      if (ptrs[id]) g += `<text x="${cx}" y="${cy-22}" text-anchor="middle" font-size="10" style="fill:var(--m-active)" font-weight="600">${esc(ptrs[id].join(','))}</text>`;
+      if (s.info && s.info[id] != null) g += `<text x="${cx}" y="${cy+30}" text-anchor="middle" font-size="9.5" style="fill:var(--ink-2)">${esc(fmt(s.info[id]))}</text>`;
+    }
+    const d = el('div', {class:'scroll'}); d.innerHTML = `<svg class="viz" width="${w}" height="${h+12}" viewBox="0 -8 ${w} ${h+12}">${g}</svg>`; return d;
+  },
+  graph(s){
+    let nodes = typeof s.nodes === 'number' ? [...Array(s.nodes).keys()] : (s.nodes || []);
+    const edges = s.edges || []; const n = nodes.length; const Wd = 380, Ht = n > 8 ? 320 : 260;
+    const pos = {};
+    nodes.forEach((id, i) => { const p = s.pos && s.pos[id];
+      pos[id] = p ? [30 + p[0]*(Wd-60), 30 + p[1]*(Ht-60)] : [Wd/2 + (Wd/2-40)*Math.cos(2*Math.PI*i/n - Math.PI/2), Ht/2 + (Ht/2-36)*Math.sin(2*Math.PI*i/n - Math.PI/2)]; });
+    const em = s.edgeMarks || {};
+    let g = `<defs><marker id="ah" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink-3)"/></marker></defs>`;
+    for (const [u, v, wt] of edges) { if (!pos[u] || !pos[v]) continue;
+      const mk = em[u+','+v] || (!s.directed && em[v+','+u]); const [x1,y1] = pos[u], [x2,y2] = pos[v];
+      const dx = x2-x1, dy = y2-y1, L = Math.hypot(dx,dy)||1, r = 18;
+      const col = mk ? `var(--m-${mk})` : 'var(--ink-3)';
+      g += `<line x1="${x1+dx/L*r}" y1="${y1+dy/L*r}" x2="${x2-dx/L*r}" y2="${y2-dy/L*r}" style="stroke:${col};stroke-width:${mk?3:1.5}" ${s.directed?'marker-end="url(#ah)"':''}/>`;
+      if (wt != null) g += `<text x="${(x1+x2)/2}" y="${(y1+y2)/2-5}" text-anchor="middle" font-size="10.5" style="fill:var(--ink-2)">${esc(fmt(wt))}</text>`;
+    }
+    const ptrs = ptrMap(s.pointers);
+    for (const id of nodes) { const [x,y] = pos[id]; const mk = getMark(s.marks, id); const col = mk ? `var(--m-${mk})` : 'var(--ink-3)';
+      g += `<circle cx="${x}" cy="${y}" r="17" style="fill:color-mix(in srgb, ${col} ${mk?22:0}%, var(--surface));stroke:${col};stroke-width:${mk?2.2:1.5}"/>`;
+      g += `<text x="${x}" y="${y+4}" text-anchor="middle" font-size="12" font-weight="600">${esc(s.labels && s.labels[id] != null ? s.labels[id] : id)}</text>`;
+      if (s.info && s.info[id] != null) g += `<text x="${x}" y="${y+31}" text-anchor="middle" font-size="10" style="fill:var(--ink-2)">${esc(fmt(s.info[id]))}</text>`;
+      if (ptrs[id]) g += `<text x="${x}" y="${y-23}" text-anchor="middle" font-size="10" font-weight="600" style="fill:var(--m-active)">${esc(ptrs[id].join(','))}</text>`;
+    }
+    const d = el('div', {class:'scroll'}); d.innerHTML = `<svg class="viz" width="${Wd}" height="${Ht}" viewBox="0 0 ${Wd} ${Ht}">${g}</svg>`; return d;
+  },
+  text(s){ return el('div', {class:'textv', text: typeof s.value === 'string' ? s.value : fmt(s.value)}); },
+};
+function renderStruct(s){
+  const f = R[s.type] || R.text;
+  return el('div', {class:'struct'}, s.name ? el('div', {class:'sname', text:s.name}) : null, f(s));
+}
+
+/* ---------- custom input parsing ---------- */
+function parseField(type, raw){
+  raw = String(raw).trim();
+  if (type === 'int' || type === 'float' || type === 'number') { const n = Number(raw); if (raw === '' || Number.isNaN(n)) throw new Error('expected a number'); if (type === 'int' && !Number.isInteger(n)) throw new Error('expected an integer'); return n; }
+  if (type === 'string' || type === 'char') { if (/^(["']).*\1$/.test(raw)) raw = raw.slice(1, -1); return raw; }
+  if (type === 'bool') { if (!/^(true|false)$/i.test(raw)) throw new Error('expected true or false'); return /^true$/i.test(raw); }
+  let txt = raw.replace(/'/g, '"');
+  try { return JSON.parse(txt); } catch(e) { throw new Error('could not read this as JSON, e.g. [1,2,3]'); }
+}
+function showField(type, v){ return (type === 'string' || type === 'char') ? v : JSON.stringify(v); }
+
+/* ---------- player ---------- */
+const SPEEDS = [{l:'0.5×', ms:1400}, {l:'1×', ms:800}, {l:'2×', ms:400}, {l:'4×', ms:180}];
+const LEGEND = {active:'current', compare:'comparing', found:'answer / match', done:'processed', bad:'rejected', visited:'visited', path:'on path'};
+class Player {
+  constructor(host, spec, opt){
+    this.spec = spec; this.opt = opt || {}; this.k = 0; this.timer = null; this.speed = 1; this.listeners = [];
+    this.code = C.parseCode(spec.code);
+    this.root = el('div', {class:'player', tabindex:'0', 'aria-label':(opt.label||'Step-by-step visualizer')+' — use arrow keys to step'});
+    host.append(this.root); this.build();
+    const ex = (spec.examples || [])[0];
+    if (ex) this.load(ex.input, ex.expected, 0);
+  }
+  build(){
+    const s = this.spec;
+    this.bar = el('div', {class:'p-bar'}, el('span', {class:'lbl', text:'Input'}));
+    this.exBtns = (s.examples||[]).map((ex, i) => el('button', {class:'btn', type:'button', onclick:() => { this.custom.hidden = true; this.load(ex.input, ex.expected, i); }}, ex.label || ('Example '+(i+1))));
+    this.bar.append(...this.exBtns);
+    this.customBtn = null;
+    this.custom = el('div', {class:'p-custom', hidden:true});
+    if (this.opt.custom !== false && s.inputs && s.inputs.length) {
+      this.customBtn = el('button', {class:'btn', type:'button', onclick:() => { this.custom.hidden = !this.custom.hidden; this.markBtn(); if (!this.custom.hidden) this.custom.querySelector('input')?.focus(); }}, 'Your own input');
+      this.bar.append(this.customBtn);
+      const ex0 = (s.examples||[])[0] || {input:{}};
+      const fields = s.inputs.map(inp => el('label', {}, `${inp.label || inp.name}  ·  ${inp.type}`,
+        el('input', {id:(this.opt.id||'p')+'-in-'+inp.name, 'data-name':inp.name, value: ex0.input[inp.name] !== undefined ? showField(inp.type, ex0.input[inp.name]) : '', spellcheck:'false', autocomplete:'off'})));
+      this.err = el('div', {class:'err', role:'status'});
+      const run = el('button', {class:'btn primary', type:'button', onclick:() => this.runCustom()}, 'Visualize this input');
+      this.custom.append(el('div', {class:'fields'}, fields), el('div', {class:'meta'}, run, el('span', {class:'kbd', text:'Keep inputs small (≈ up to 20 elements) so every step stays readable.'})), this.err);
+      this.custom.addEventListener('keydown', e => { if (e.key === 'Enter') this.runCustom(); });
+    }
+    this.stage = el('div', {class:'p-stage'});
+    this.codeEl = codeBlock(this.code.lines);
+    const side = el('div', {class:'p-side'}, el('div', {class:'code-head'}, el('span', {text: s.language || 'Code'}), el('span', {text:'line highlights follow the steps'})), this.codeEl);
+    this.prev = el('button', {class:'btn', type:'button', 'aria-label':'Previous step', onclick:() => this.go(this.k-1)}, '◀ Prev');
+    this.next = el('button', {class:'btn', type:'button', 'aria-label':'Next step', onclick:() => this.go(this.k+1)}, 'Next ▶');
+    this.play = el('button', {class:'btn primary', type:'button', onclick:() => this.toggle()}, '▶ Play');
+    this.first = el('button', {class:'btn', type:'button', 'aria-label':'First step', onclick:() => this.go(0)}, '⏮');
+    this.last = el('button', {class:'btn', type:'button', 'aria-label':'Last step', onclick:() => this.go(this.trace.steps.length-1)}, '⏭');
+    this.range = el('input', {type:'range', min:'0', max:'0', value:'0', 'aria-label':'Scrub steps', id:(this.opt.id||'p')+'-scrub', oninput:e => this.go(+e.target.value)});
+    this.spd = el('select', {'aria-label':'Speed', id:(this.opt.id||'p')+'-speed', onchange:e => { this.speed = +e.target.value; if (this.timer) { this.stop(); this.toggle(); } }}, SPEEDS.map((x, i) => el('option', {value:i, selected: i===1}, x.l)));
+    const ctl = el('div', {class:'p-ctl'}, this.first, this.prev, this.play, this.next, this.last, this.range, this.spd, el('span', {class:'kbd', text:'← → step · space play'}));
+    this.root.append(this.bar, this.custom, el('div', {class:'p-main'}, this.stage, side), ctl);
+    this.root.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
+      if (e.target.tagName === 'SELECT') return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); this.go(this.k+1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); this.go(this.k-1); }
+      else if (e.key === ' ' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.toggle(); }
+    });
+  }
+  markBtn(){ this.exBtns.forEach((b, i) => b.setAttribute('aria-pressed', String(this.exIndex === i))); if (this.customBtn) this.customBtn.setAttribute('aria-pressed', String(this.exIndex === -1 || !this.custom.hidden)); }
+  runCustom(){
+    const input = {}; this.err.textContent = '';
+    try {
+      for (const inp of this.spec.inputs) { const f = this.custom.querySelector(`[data-name="${inp.name}"]`);
+        try { input[inp.name] = parseField(inp.type, f.value); } catch(e) { throw new Error(`${inp.label || inp.name}: ${e.message}`); } }
+      const lim = this.spec.maxSize || 40;
+      for (const [k, v] of Object.entries(input)) if ((Array.isArray(v) && v.length > lim) || (typeof v === 'string' && v.length > lim)) throw new Error(`${k}: keep it to ${lim} elements or fewer so the steps stay readable.`);
+      if (typeof this.spec.validate === 'function') { const m = this.spec.validate(input); if (m) throw new Error(m); }
+    } catch(e) { this.err.textContent = e.message; return; }
+    let expected;
+    if (typeof this.spec.reference === 'function') { try { expected = this.spec.reference(C.clone(input)); } catch(e) {} }
+    this.load(input, expected, -1);
+  }
+  load(input, expected, exIndex){
+    this.stop(); this.exIndex = exIndex; this.input = input; this.expected = expected;
+    this.trace = C.runTrace(this.spec, input);
+    if (!this.trace.steps.length) this.trace.steps.push({line:0, msg:'No steps recorded.', vars:{}, show:[]});
+    this.range.max = String(this.trace.steps.length - 1);
+    this.markBtn(); this.go(0, true);
+    this.listeners.forEach(f => f(this));
+  }
+  go(k, force){
+    const n = this.trace.steps.length; k = Math.max(0, Math.min(n-1, k));
+    if (k === this.k && !force) return; this.k = k; this.render();
+    if (k === n-1) this.stop();
+    this.listeners.forEach(f => f(this, 'step'));
+  }
+  toggle(){ if (this.timer) return this.stop(); if (this.k >= this.trace.steps.length-1) this.go(0);
+    this.play.textContent = '⏸ Pause'; this.timer = setInterval(() => this.go(this.k+1), SPEEDS[this.speed].ms); }
+  stop(){ if (this.timer) clearInterval(this.timer); this.timer = null; if (this.play) this.play.textContent = '▶ Play'; }
+  render(){
+    const t = this.trace, st = t.steps[this.k], prev = t.steps[this.k-1], n = t.steps.length;
+    const stage = this.stage; stage.textContent = '';
+    stage.append(el('div', {class:'narr', 'aria-live':'polite'}, el('span', {class:'ct', text:`Step ${this.k+1} of ${n}${st.line ? ' · line '+st.line : ''}`}), el('span', {class:'msg', html: esc(st.msg).replace(/`([^`]+)`/g, '<code>$1</code>')})));
+    const vk = Object.keys(st.vars || {});
+    if (vk.length) stage.append(el('div', {class:'vars'}, vk.map(k => {
+      const chg = prev && JSON.stringify(fmt(prev.vars[k])) !== JSON.stringify(fmt(st.vars[k]));
+      return el('span', {class:'var'+(chg?' chg':'')}, el('b', {text:k+' = '}), fmt(st.vars[k]));
+    })));
+    for (const s of st.show || []) stage.append(renderStruct(s));
+    const used = new Set(); (st.show||[]).forEach(s => { const walk = m => { if (!m) return; (m instanceof Map ? [...m.values()] : Object.values(m)).forEach(v => used.add(v)); }; walk(s.marks); walk(s.edgeMarks); });
+    const lg = [...used].filter(m => LEGEND[m]); if (lg.length) stage.append(el('div', {class:'legend'}, lg.map(m => el('span', {class:'m-'+m}, el('i'), LEGEND[m]))));
+    if (this.k === n-1) {
+      if (t.error) stage.append(el('div', {class:'result no', text:'The tracer stopped with an error: '+t.error}));
+      else {
+        const has = this.expected !== undefined; const ok = has && C.sameResult(this.spec, t.result, this.expected);
+        stage.append(el('div', {class:'result '+(has ? (ok?'ok':'no') : ''), text:'Result: ' + fmt(C.normalize(t.result)) + (has ? (ok ? '  ✓ matches the expected output' : '  ✗ expected ' + fmt(this.expected)) : '')}));
+      }
+      if (t.truncated) stage.append(el('div', {class:'kbd', text:`Showing the first ${C.MAX_STEPS} steps — try a smaller input.`}));
+    }
+    [...this.codeEl.children].forEach((ln, i) => ln.classList.toggle('on', i+1 === st.line));
+    const on = this.codeEl.children[st.line-1];
+    if (on) { const top = on.offsetTop - this.codeEl.clientHeight/2; if (top < this.codeEl.scrollTop || on.offsetTop > this.codeEl.scrollTop + this.codeEl.clientHeight - 30) this.codeEl.scrollTop = Math.max(0, top); }
+    this.range.value = String(this.k);
+    this.prev.disabled = this.first.disabled = this.k === 0; this.next.disabled = this.last.disabled = this.k === n-1;
+  }
+}
+
+/* ---------- page sections ---------- */
+const diffCls = d => String(d||'').toLowerCase();
+function head(sec, eyebrow, title, sub){ sec.append(el('div', {class:'sec-head'}, el('span', {class:'eyebrow', text:eyebrow}), el('h2', {text:title}), sub ? el('p', {class:'muted', html:sub}) : null)); }
+function fmtIO(o){ return Object.entries(o).map(([k, v]) => `${k} = ${typeof v === 'string' ? JSON.stringify(v) : JSON.stringify(v)}`).join(', '); }
+
+// header
+$('#top').append(
+  el('span', {class:'eyebrow', text:[P.source || 'Problem', P.id != null ? '#'+P.id : null].filter(Boolean).join(' · ')}),
+  el('h1', {text:P.title}),
+  el('div', {class:'meta'}, el('span', {class:'chip diff '+diffCls(P.difficulty), text:P.difficulty}), (P.tags||[]).map(t => el('span', {class:'chip', text:t})),
+    P.url ? el('a', {class:'btn', href:P.url, target:'_blank', rel:'noopener'}, 'Open problem ↗') : null));
+
+// problem
+(function(){
+  const sec = $('#problem'); head(sec, 'The problem', 'What we are solving');
+  const left = el('div', {class:'panel'}, el('div', {class:'summary', html:P.summary}));
+  if (P.constraints && P.constraints.length) left.append(el('div', {}, el('h3', {text:'Constraints', style:{fontSize:'.95rem', marginBottom:'6px'}}), el('ul', {class:'plain'}, P.constraints.map(c => el('li', {class:'mono', text:c})))));
+  const right = el('div', {class:'panel'}, el('h3', {text:'Examples'}), (P.examples||[]).map(ex => el('div', {class:'ex'},
+    el('span', {class:'eyebrow', text:ex.label}), el('div', {class:'io', text:'Input:  '+fmtIO(ex.input)}), el('div', {class:'io', text:'Output: '+JSON.stringify(ex.expected)}), ex.note ? el('p', {class:'muted', style:{fontSize:'.88rem'}, html:ex.note}) : null)));
+  sec.append(el('div', {class:'two'}, left, right));
+})();
+
+// approach
+(function(){
+  const sec = $('#approach'); head(sec, 'Think it through', 'Approach', 'Reveal the hints one at a time — try to finish the idea yourself before opening the next.');
+  if (P.hints && P.hints.length) sec.append(el('div', {class:'hints'}, P.hints.map((h, i) => {
+    const body = el('div', {class:'body', 'data-locked':'true', html:h, title:'Click to reveal', role:'button', tabindex:'0'});
+    const reveal = () => body.setAttribute('data-locked', 'false');
+    body.addEventListener('click', reveal); body.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); reveal(); } });
+    return el('div', {class:'hint'}, el('span', {class:'n', text:'HINT '+(i+1)}), body);
+  })));
+  if (P.insight) sec.append(el('div', {class:'insight', html:'<strong>Key insight.</strong> '+P.insight}));
+  if (P.approaches && P.approaches.length) sec.append(el('div', {class:'approaches'}, P.approaches.map(a => el('div', {class:'appr'+(a.best?' best':'')},
+    el('div', {class:'meta', style:{justifyContent:'space-between'}}, el('h3', {text:a.name}), a.best ? el('span', {class:'chip', style:{borderColor:'var(--accent)', color:'var(--accent)'}, text:'visualized below'}) : null),
+    el('p', {html:a.idea}), el('div', {class:'cx'}, el('span', {class:'chip', text:'time '+a.time}), el('span', {class:'chip', text:'space '+a.space})),
+    a.tradeoff ? el('p', {class:'muted', style:{fontSize:'.88rem'}, html:a.tradeoff}) : null))));
+})();
+
+// visualizer + dry run
+let main;
+(function(){
+  const sec = $('#visualize'); head(sec, 'Interactive', 'Watch the solution run', 'Pick an example or type your own input, then step through. The highlighted code line, the variables and the data structures all move together.');
+  main = new Player(sec, P, {id:'main', label:P.title+' visualizer'});
+  const dsec = $('#dryrun'); head(dsec, 'Dry run', 'Every step, in one table', 'Generated from the same run as the visualizer. Click a row to jump there.');
+  const wrap = el('div', {class:'tablewrap'}); dsec.append(wrap);
+  const cap = el('p', {class:'muted', style:{fontSize:'.88rem'}}); dsec.append(cap);
+  let rows = [];
+  function build(){
+    const t = main.trace; wrap.textContent = ''; rows = [];
+    const tb = el('tbody');
+    const LIM = 400;
+    t.steps.slice(0, LIM).forEach((st, i) => {
+      const pv = t.steps[i-1];
+      const state = Object.keys(st.vars||{}).map(k => { const chg = pv && fmt(pv.vars[k]) !== fmt(st.vars[k]); return (chg ? '<b>' : '') + esc(k+'='+fmt(st.vars[k])) + (chg ? '</b>' : ''); }).join('  ');
+      const tr = el('tr', {onclick:() => { main.go(i); main.root.scrollIntoView({block:'start'}); }},
+        el('td', {class:'st', text:String(i+1)}), el('td', {class:'st', text: st.line ? String(st.line) : '–'}),
+        el('td', {class:'st', html: state || '–'}), el('td', {html: esc(st.msg).replace(/`([^`]+)`/g, '<code>$1</code>')}));
+      rows.push(tr); tb.append(tr);
+    });
+    wrap.append(el('table', {class:'dry'}, el('thead', {}, el('tr', {}, el('th', {text:'#'}), el('th', {text:'Line'}), el('th', {text:'State after step'}), el('th', {text:'What happens'}))), tb));
+    const lbl = main.exIndex >= 0 ? ((P.examples[main.exIndex]||{}).label || 'Example') : 'your input';
+    cap.textContent = `Dry run of ${lbl}: ${t.steps.length} steps${t.steps.length > LIM ? ` (first ${LIM} shown)` : ''}. Bold values changed on that step.`;
+    mark();
+  }
+  function mark(){ rows.forEach((r, i) => r.classList.toggle('cur', i === main.k)); }
+  main.listeners.push((p, kind) => kind === 'step' ? mark() : build());
+  build();
+})();
+
+// algorithms
+(function(){
+  const sec = $('#algorithms'); const A = P.algorithms || [];
+  head(sec, 'Toolbox', A.length ? 'Special algorithms used' : 'Techniques used', A.length ? null : 'No named algorithm is needed here beyond the approach above.');
+  A.forEach((a, i) => {
+    const card = el('article', {class:'algo'},
+      el('div', {class:'sec-head'}, el('span', {class:'eyebrow', text:a.category || 'Algorithm'}), el('h3', {text:a.name, style:{fontSize:'1.35rem'}}), a.tagline ? el('p', {class:'muted', html:a.tagline}) : null));
+    const leftCol = el('div', {style:{display:'grid', gap:'12px', alignContent:'start'}}, el('div', {class:'summary', html:a.explain || ''}));
+    if (a.steps) leftCol.append(el('div', {}, el('h3', {text:'How it works', style:{fontSize:'.95rem', marginBottom:'6px'}}), el('ol', {}, a.steps.map(s => el('li', {html:s})))));
+    if (a.whenToUse) leftCol.append(el('div', {}, el('h3', {text:'Reach for it when', style:{fontSize:'.95rem', marginBottom:'6px'}}), el('ul', {class:'plain'}, a.whenToUse.map(s => el('li', {html:s})))));
+    if (a.pitfalls) leftCol.append(el('div', {}, el('h3', {text:'Common pitfalls', style:{fontSize:'.95rem', marginBottom:'6px'}}), el('ul', {class:'plain'}, a.pitfalls.map(s => el('li', {html:s})))));
+    if (a.complexity) leftCol.append(el('div', {class:'cx'}, el('span', {class:'chip mono', text:a.complexity})));
+    const rightCol = el('div', {style:{display:'grid', gap:'8px', alignContent:'start', minWidth:0}});
+    if (a.template) rightCol.append(el('span', {class:'eyebrow', text:'Reusable template'}), codeBlock(C.parseCode(a.template).lines, 'tpl'));
+    card.append(el('div', {class:'grid2'}, leftCol, rightCol));
+    if (a.demo) { card.append(el('span', {class:'eyebrow', text:'Mini demo'})); new Player(card, Object.assign({language:P.language}, a.demo), {id:'algo'+i, custom:false, label:a.name+' demo'}); }
+    sec.append(card);
+  });
+})();
+
+// similar
+(function(){
+  const sec = $('#similar'); head(sec, 'Keep going', 'Similar problems', 'Same family, one twist each. Try the hint before looking anything up.');
+  sec.append(el('div', {class:'sim'}, (P.similar||[]).map(q => {
+    const hb = el('div', {class:'hintbox', html:q.hint, hidden:true});
+    const btn = el('button', {class:'btn', type:'button', onclick:() => { hb.hidden = !hb.hidden; btn.textContent = hb.hidden ? 'Show hint' : 'Hide hint'; }}, 'Show hint');
+    return el('article', {class:'scard'},
+      q.url ? el('a', {class:'t', href:q.url, target:'_blank', rel:'noopener', text:q.title + ' ↗'}) : el('span', {class:'t', text:q.title}),
+      el('div', {class:'row'}, q.difficulty ? el('span', {class:'chip diff '+diffCls(q.difficulty), text:q.difficulty}) : null, q.technique ? el('span', {class:'chip', text:q.technique}) : null),
+      el('p', {class:'muted', style:{fontSize:'.9rem'}, html:'<strong style="color:var(--ink)">What changes:</strong> ' + (q.twist || '')}),
+      el('div', {style:{display:'grid', gap:'8px'}}, btn, hb));
+  })));
+})();
+document.addEventListener('keydown', e => {
+  if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+  const a = document.activeElement;
+  if (a && (/^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(a.tagName) || a.isContentEditable || a.closest('.player'))) return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); main.go(main.k+1); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); main.go(main.k-1); }
+});
+$('#foot').textContent = 'Problem summary is paraphrased; open the original link for the full statement.';
+})();
+</script>
