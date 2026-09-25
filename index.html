@@ -5,8 +5,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>DSA Visualizers · Interview Notes</title>
-<meta name="description" content="Step-through walkthroughs of coding interview problems: the key idea, a dry run you can scrub through, and similar problems to try next.">
+<title>Interview Notes</title>
+<meta name="description" content="Revision notes by topic, and step-through walkthroughs of coding interview problems: the key idea, a dry run you can scrub through, and similar problems to try next.">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#EEF1F5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0D1219" media="(prefers-color-scheme: dark)">
@@ -16,9 +16,11 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
 <!--
   Homepage for GitHub Pages. The empty front matter at the top makes Jekyll process this file, and
-  the Liquid loop further down lists every .html file in the Visualizers folder at build time, so
-  adding a page to that folder is all it takes for it to show up here. The script at the bottom then
-  reads each page's title, source, difficulty, tags and key idea to fill in its card.
+  the build lists every .html file in the Visualizers folder (the Liquid loop further down) and every
+  Markdown file inside a folder (note-paths, at the bottom), so adding a file is all it takes for it
+  to show up here. The scripts at the bottom then read each visualizer's title, source, difficulty,
+  tags and key idea, and each note's title and sections, to fill in the cards. Notes open in
+  notes.html.
 -->
 <style>
 :root{
@@ -123,6 +125,28 @@ h1{margin:0;font:700 clamp(2.3rem,6.4vw,3.9rem)/1.02 var(--f-display);letter-spa
 @keyframes pulse{from{opacity:.45}to{opacity:1}}
 .empty{margin:0;padding:36px 20px;border:1px dashed var(--line);border-radius:var(--r);color:var(--ink-2);text-align:center}
 
+/* Notes | Visualizers tabs. Without the script, both panels show one after the other. */
+.tabs{display:flex;gap:2px;margin:0 0 20px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs [role="tab"]{position:relative;flex:none;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 14px;border:0;background:none;color:var(--ink-2);font:600 1rem/1 var(--f-body);cursor:pointer}
+.tabs [role="tab"]:hover,.tabs [role="tab"][aria-selected="true"]{color:var(--ink)}
+.tabs [role="tab"][aria-selected="true"]::after{content:"";position:absolute;right:10px;bottom:-1px;left:10px;height:3px;border-radius:3px 3px 0 0;background:var(--accent)}
+.tabs .n{min-width:22px;padding:3px 7px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);font:600 .72rem/1 var(--f-mono);text-align:center}
+.tabs [aria-selected="true"] .n{background:var(--accent-soft);color:var(--ink)}
+.panel-title{margin:28px 0 14px;font:700 1.5rem/1.2 var(--f-display)}
+.tabs:not([hidden]) ~ .panel .panel-title{display:none}
+
+/* notes: one group per folder */
+.groups{display:grid;gap:36px}
+.group-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:12px}
+.group-title{margin:0;font:700 1.4rem/1.2 var(--f-display);letter-spacing:-.015em}
+.group-n{color:var(--ink-2);font:600 .74rem/1 var(--f-mono)}
+.group-go{max-width:100%;margin-left:auto;overflow:hidden;font:500 .9rem/1.5 var(--f-body);white-space:nowrap;text-decoration:none;text-overflow:ellipsis}
+.group-go:hover{text-decoration:underline;text-underline-offset:3px}
+.card-time{margin-left:auto;color:var(--ink-2);font:500 .78rem/1 var(--f-body)}
+.card-idea b{color:var(--ink);font-weight:600}
+mark{padding:0 1px;border-radius:3px;background:color-mix(in srgb,var(--medium-dot) 38%,transparent);color:inherit}
+
 /* shown only if this file is opened without the GitHub Pages build */
 .note-unbuilt{display:none;margin:0;padding:18px 20px;border:1px dashed var(--line);border-radius:var(--r);color:var(--ink-2)}
 body:not([data-built="jekyll"]) .needs-build{display:none!important}
@@ -136,65 +160,93 @@ footer p{margin:0}
 <body data-built="{{ 'jekyll' }}">
 <div class="wrap">
   <header class="top">
-    <p class="eyebrow">Interview notes</p>
-    <h1>DSA Visualizers</h1>
-    <p class="lede">Step-through walkthroughs of coding interview problems: the key idea, a dry run you can scrub through, and similar problems to try next.</p>
+    <p class="eyebrow">Interview prep</p>
+    <h1>Interview Notes</h1>
+    <p class="lede">Revision notes by topic, and step-through walkthroughs of coding interview problems: the key idea, a dry run you can scrub through, and similar problems to try next.</p>
   </header>
 
   <main>
     <div class="needs-build">
-      {%- assign visualizers = site.static_files | where_exp: "file", "file.path contains '/Visualizers/'" | where: "extname", ".html" | sort: "path" %}
-      <div class="toolbar" id="toolbar" role="search" hidden>
-        <label class="search">
-          <span class="sr-only">Search visualizers</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
-          <input id="q" type="search" placeholder="Search name, topic or number" autocomplete="off" spellcheck="false">
-          <kbd aria-hidden="true">/</kbd>
-        </label>
-        <div class="seg" role="group" aria-label="Difficulty">
-          <button type="button" data-diff="all" aria-pressed="true">All <span class="n"></span></button>
-          <button type="button" data-diff="easy" aria-pressed="false"><span class="dot easy"></span>Easy <span class="n"></span></button>
-          <button type="button" data-diff="medium" aria-pressed="false"><span class="dot medium"></span>Medium <span class="n"></span></button>
-          <button type="button" data-diff="hard" aria-pressed="false"><span class="dot hard"></span>Hard <span class="n"></span></button>
+      <div class="tabs" role="tablist" aria-label="Sections" hidden>
+        <button type="button" role="tab" id="tab-notes" data-tab="notes" aria-controls="panel-notes" aria-selected="true">Notes <span class="n"></span></button>
+        <button type="button" role="tab" id="tab-visualizers" data-tab="visualizers" aria-controls="panel-visualizers" aria-selected="false" tabindex="-1">Visualizers <span class="n"></span></button>
+      </div>
+
+      <section class="panel" id="panel-notes" role="tabpanel" aria-labelledby="tab-notes">
+        <h2 class="panel-title">Notes</h2>
+        <div class="toolbar" id="notes-toolbar" role="search" hidden>
+          <label class="search">
+            <span class="sr-only">Search notes</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+            <input id="notes-q" type="search" placeholder="Search titles, sections and text" autocomplete="off" spellcheck="false">
+            <kbd aria-hidden="true">/</kbd>
+          </label>
         </div>
-        <label class="sort">Sort
-          <select id="sort" autocomplete="off">
-            <option value="name">Name</option>
-            <option value="number">Problem #</option>
-            <option value="difficulty">Difficulty</option>
-          </select>
-        </label>
-      </div>
+        <div class="status">
+          <p id="notes-count" aria-live="polite"></p>
+          <button type="button" class="linkish" id="notes-clear" hidden>Clear search</button>
+        </div>
+        <div class="groups" id="note-groups"></div>
+        <p class="empty" id="notes-none" hidden>No notes match this search.</p>
+        <p class="empty" id="notes-empty" hidden>No notes yet. Add a Markdown (<code>.md</code>) file inside a folder, such as <code>Java_SpringBoot</code>, and it will show up here after the next GitHub Pages build.</p>
+        <noscript><p class="empty">The notes list needs JavaScript. The notes themselves are also readable on GitHub.</p></noscript>
+      </section>
 
-      <div class="status">
-        <p id="count" aria-live="polite">{{ visualizers.size }} visualizer{% if visualizers.size != 1 %}s{% endif %}</p>
-        <button type="button" class="pill" id="tag-pill" hidden>Topic: <b></b><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="sr-only">(remove)</span></button>
-        <button type="button" class="linkish" id="clear" hidden>Clear filters</button>
-      </div>
+      <section class="panel" id="panel-visualizers" role="tabpanel" aria-labelledby="tab-visualizers">
+        <h2 class="panel-title">Visualizers</h2>
+        {%- assign visualizers = site.static_files | where_exp: "file", "file.path contains '/Visualizers/'" | where: "extname", ".html" | sort: "path" %}
+        <div class="toolbar" id="toolbar" role="search" hidden>
+          <label class="search">
+            <span class="sr-only">Search visualizers</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+            <input id="q" type="search" placeholder="Search name, topic or number" autocomplete="off" spellcheck="false">
+            <kbd aria-hidden="true">/</kbd>
+          </label>
+          <div class="seg" role="group" aria-label="Difficulty">
+            <button type="button" data-diff="all" aria-pressed="true">All <span class="n"></span></button>
+            <button type="button" data-diff="easy" aria-pressed="false"><span class="dot easy"></span>Easy <span class="n"></span></button>
+            <button type="button" data-diff="medium" aria-pressed="false"><span class="dot medium"></span>Medium <span class="n"></span></button>
+            <button type="button" data-diff="hard" aria-pressed="false"><span class="dot hard"></span>Hard <span class="n"></span></button>
+          </div>
+          <label class="sort">Sort
+            <select id="sort" autocomplete="off">
+              <option value="name">Name</option>
+              <option value="number">Problem #</option>
+              <option value="difficulty">Difficulty</option>
+            </select>
+          </label>
+        </div>
 
-      <ul class="grid" id="grid">
-        {%- for file in visualizers %}
-        {%- assign href = file.path | remove_first: "/" | uri_escape %}
-        {%- assign name = file.basename | replace: "-visualizer", "" | replace: "-", " " | replace: "_", " " | strip %}
-        <li class="card">
-          <div class="card-top"></div>
-          <h2 class="card-title"><a href="{{ href | escape }}">{{ name | slice: 0 | upcase | escape }}{{ name | slice: 1, name.size | escape }}</a></h2>
-          <p class="card-idea"></p>
-          <ul class="tags" aria-label="Topics"></ul>
-        </li>
-        {%- endfor %}
-      </ul>
-      {%- if visualizers.size == 0 %}
-      <p class="empty">No visualizers yet. Add an <code>.html</code> page to the <code>Visualizers</code> folder and it will show up here after the next GitHub Pages build.</p>
-      {%- endif %}
-      <p class="empty" id="no-match" hidden>Nothing matches these filters.</p>
+        <div class="status">
+          <p id="count" aria-live="polite">{{ visualizers.size }} visualizer{% if visualizers.size != 1 %}s{% endif %}</p>
+          <button type="button" class="pill" id="tag-pill" hidden>Topic: <b></b><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="sr-only">(remove)</span></button>
+          <button type="button" class="linkish" id="clear" hidden>Clear filters</button>
+        </div>
+
+        <ul class="grid" id="grid">
+          {%- for file in visualizers %}
+          {%- assign href = file.path | remove_first: "/" | uri_escape %}
+          {%- assign name = file.basename | replace: "-visualizer", "" | replace: "-", " " | replace: "_", " " | strip %}
+          <li class="card">
+            <div class="card-top"></div>
+            <h2 class="card-title"><a href="{{ href | escape }}">{{ name | slice: 0 | upcase | escape }}{{ name | slice: 1, name.size | escape }}</a></h2>
+            <p class="card-idea"></p>
+            <ul class="tags" aria-label="Topics"></ul>
+          </li>
+          {%- endfor %}
+        </ul>
+        {%- if visualizers.size == 0 %}
+        <p class="empty">No visualizers yet. Add an <code>.html</code> page to the <code>Visualizers</code> folder and it will show up here after the next GitHub Pages build.</p>
+        {%- endif %}
+        <p class="empty" id="no-match" hidden>Nothing matches these filters.</p>
+      </section>
     </div>
 
-    <p class="note-unbuilt">The visualizer list is generated when GitHub Pages builds this site, so it only appears on the published page. In the repo, go to Settings → Pages and deploy from the <code>main</code> branch.</p>
+    <p class="note-unbuilt">The notes and visualizer lists are generated when GitHub Pages builds this site, so they only appear on the published page. In the repo, go to Settings → Pages and deploy from the <code>main</code> branch.</p>
   </main>
 
   <footer class="needs-build">
-    <p>Every page in the <code>Visualizers</code> folder is listed here automatically.</p>
+    <p>Markdown files inside a folder, and every page in the <code>Visualizers</code> folder, are listed here automatically.</p>
     <p>Updated {{ site.time | date: "%-d %b %Y" }}{% if site.github.repository_url %} · <a href="{{ site.github.repository_url }}">{{ site.github.repository_nwo }}</a>{% endif %}</p>
   </footer>
 </div>
@@ -349,7 +401,7 @@ footer p{margin:0}
   });
   document.addEventListener('keydown', e => {
     const typing = e.target instanceof Element && e.target.closest('input, select, textarea, [contenteditable]');
-    if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || typing) return;
+    if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || typing || e.defaultPrevented || ui.q.closest('[hidden]')) return;
     e.preventDefault();
     ui.q.focus();
   });
@@ -393,6 +445,340 @@ footer p{margin:0}
     }
     try { localStorage.setItem(CACHE_KEY, JSON.stringify(next)); } catch (e) { /* storage unavailable */ }
   });
+})();
+</script>
+
+<script type="application/json" id="note-paths">{% include note-paths.json %}</script>
+<script>
+/* The Notes | Visualizers tabs, and the Notes panel: every Markdown file inside a folder, grouped by
+   folder. The list comes from the Jekyll build (note-paths above); this script reads each note for
+   its title, sections and text so the cards can show them and the search can look through them.
+   Notes open in notes.html, which derives the same folder, number and fallback title from a note's
+   path, reads the titles stored under META_KEY, and records the last note read under LAST_KEY. */
+(() => {
+  'use strict';
+  if (document.body.dataset.built !== 'jekyll') return; // opened without the GitHub Pages build
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const el = (tag, cls, text) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text) node.textContent = text;
+    return node;
+  };
+  const store = {
+    get(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } },
+    set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* storage unavailable */ } },
+  };
+  const ui = { toolbar: $('#notes-toolbar'), q: $('#notes-q'), count: $('#notes-count'), clear: $('#notes-clear'), groups: $('#note-groups'), none: $('#notes-none'), empty: $('#notes-empty') };
+
+  /* ---- the notes ---- */
+
+  const META_KEY = 'interview-notes:notes-meta:v1'; // path -> { title, sections, words }
+  const LAST_KEY = 'interview-notes:last-read:v1';  // folder -> key of the note last opened in notes.html
+  const pretty = s => s.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+  const encodePath = path => path.split('/').map(encodeURIComponent).join('/');
+  const readerUrl = (note, q) => 'notes.html?note=' + encodePath(note.key) + (q ? '&q=' + encodeURIComponent(q) : '');
+
+  let paths = [];
+  try { paths = JSON.parse($('#note-paths').textContent); } catch (e) { /* treated as no notes */ }
+  const notes = paths.map(path => {
+    const slash = path.lastIndexOf('/');
+    const dir = path.slice(0, slash);
+    const base = path.slice(slash + 1).replace(/\.(md|markdown)$/i, '');
+    const m = /^(\d+)[ ._-]+(.+)$/.exec(base);
+    return { path, dir, key: dir + '/' + base, num: m ? m[1] : '', fallback: pretty(m ? m[2] : base) || base };
+  }).sort((a, b) => collator.compare(a.path, b.path));
+
+  const groups = [];
+  for (const note of notes) {
+    let group = groups.find(g => g.dir === note.dir);
+    if (!group) groups.push(group = { dir: note.dir, label: note.dir.split('/').map(pretty).join(' / '), notes: [] });
+    group.notes.push(note);
+  }
+  groups.sort((a, b) => collator.compare(a.dir, b.dir));
+
+  const meta = store.get(META_KEY) || {};
+  const texts = new Map(); // path -> parseNote() result, once the note has been fetched
+  const titleOf = note => (meta[note.path] && meta[note.path].title) || note.fallback;
+  const readingTime = words => `${Math.max(1, Math.round(words / 220))} min`; // as notes.html
+
+  /* ---- reading a note: roughly, for the cards and search (notes.html does the real rendering) ---- */
+
+  const plain = s => s
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')              // links and images keep their text
+    .replace(/\[([^\]]+)\]\[[^\]]*\]/g, '$1')
+    .replace(/`+/g, '')
+    .replace(/(\*\*|__|~~)(?=\S)(.+?)\1/g, '$2')
+    .replace(/(^|[^\w*])\*(?=\S)([^*]+?)\*(?!\w)/g, '$1$2')
+    .replace(/(^|\W)_(?=\S)([^_]+?)_(?!\w)/g, '$1$2')
+    .replace(/\\([!-\/:-@\[-`{-~])/g, '$1')                  // backslash escapes
+    .replace(/&(amp|lt|gt|quot|#39);/g, (m, name) => ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" })[name])
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Title (first # heading), section names (## headings), word count and plain text of a note, plus
+  // where each heading starts in that text so a search match can say which section it is in.
+  function parseNote(md) {
+    const note = { title: '', sections: [], words: 0, text: '', starts: [] };
+    const parts = [];
+    let fence = '', length = 0;
+    const add = s => {
+      s = s.trim();
+      if (s) { parts.push(s); length += s.length + 1; }
+    };
+    for (const line of md.replace(/\r\n?/g, '\n').split('\n')) {
+      const f = /^ {0,3}(`{3,}|~{3,})/.exec(line);
+      if (fence) {
+        if (f && f[1][0] === fence[0] && f[1].length >= fence.length && !line.slice(f[0].length).trim()) fence = '';
+        else add(line);
+        continue;
+      }
+      if (f) { fence = f[1]; continue; }
+      const h = /^ {0,3}(#{1,6})(?:[ \t]+(.*?))?(?:[ \t]+#+)?[ \t]*$/.exec(line);
+      if (h) {
+        const text = plain(h[2] || '');
+        if (h[1].length === 1 && !note.title) { note.title = text; continue; }
+        if (h[1].length === 2) note.sections.push(text);
+        note.starts.push({ title: text, at: length });
+        add(text);
+        continue;
+      }
+      if (/^[\s|:*_=+-]*$/.test(line)) continue; // blank lines, rules and table dividers
+      add(plain(line
+        .replace(/^ {0,3}(?:>[ \t]?)+/, '')
+        .replace(/^\s*(?:[-*+]|\d{1,9}[.)])[ \t]+(?:\[[ xX]\][ \t]+)?/, '')
+        .replace(/^\s*\||\|\s*$/g, '')
+        .replace(/\s*\|\s*/g, ' · ')));
+    }
+    note.text = parts.join('\n');
+    note.words = (note.title.match(/\S+/g) || []).length + (note.text.match(/\S+/g) || []).length;
+    return note;
+  }
+
+  /* ---- cards ---- */
+
+  for (const [i, group] of groups.entries()) {
+    const section = el('section', 'group');
+    const title = el('h2', 'group-title', group.label);
+    title.id = 'folder-' + (i + 1);
+    section.setAttribute('aria-labelledby', title.id);
+    group.go = el('a', 'group-go');
+    group.count = el('span', 'group-n');
+    const head = el('div', 'group-head');
+    head.append(title, group.count, group.go);
+    const list = el('ul', 'grid');
+    for (const note of group.notes) {
+      note.card = el('li', 'card');
+      note.top = el('div', 'card-top');
+      note.link = el('a');
+      note.idea = el('p', 'card-idea');
+      const h3 = el('h3', 'card-title');
+      h3.append(note.link);
+      note.card.append(note.top, h3, note.idea);
+      list.append(note.card);
+    }
+    section.append(head, list);
+    group.el = section;
+    ui.groups.append(section);
+  }
+
+  const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // Text with every search term wrapped in <mark>, as nodes (never HTML).
+  function highlight(text, terms) {
+    if (!terms.length || !text) return [text];
+    const out = [];
+    let last = 0;
+    for (const m of text.matchAll(new RegExp(terms.map(escapeRe).join('|'), 'giu'))) {
+      if (!m[0]) continue;
+      out.push(text.slice(last, m.index), el('mark', null, m[0]));
+      last = m.index + m[0].length;
+    }
+    out.push(text.slice(last));
+    return out;
+  }
+
+  // The first place a term that isn't already in the title turns up: that line of the note, cut down
+  // to size, and the section it is in.
+  function snippet(note, terms) {
+    const parsed = texts.get(note.path);
+    if (!parsed) return null;
+    const { text, starts } = parsed;
+    const title = titleOf(note).toLowerCase();
+    let at = -1, len = 0;
+    for (const term of terms) {
+      if (title.includes(term)) continue;
+      const m = new RegExp(escapeRe(term), 'iu').exec(text);
+      if (m && (at === -1 || m.index < at)) { at = m.index; len = m[0].length; }
+    }
+    if (at === -1) return null;
+    let start = text.lastIndexOf('\n', at) + 1;
+    let end = text.indexOf('\n', at);
+    if (end === -1) end = text.length;
+    const lineStart = start;
+    if (at - start > 60) {
+      const space = text.indexOf(' ', at - 50);
+      start = space !== -1 && space < at ? space + 1 : at - 50;
+    }
+    if (end - at > 180) {
+      const space = text.lastIndexOf(' ', at + 180);
+      end = space > at + len ? space : at + 180;
+    }
+    let section = '';
+    for (const s of starts) {
+      if (s.at > at) break;
+      section = s.at === lineStart ? '' : s.title; // a match in a heading needs no section label
+    }
+    const before = start === lineStart ? '' : '… ';
+    const after = end === text.length || text[end] === '\n' ? '' : ' …';
+    return { section, text: before + text.slice(start, end) + after };
+  }
+
+  const state = { q: '' };
+  const termsOf = q => [...new Set(q.toLowerCase().split(/\s+/).filter(Boolean))].sort((a, b) => b.length - a.length);
+  function haystack(note) {
+    if (note.hay == null) {
+      const m = meta[note.path] || {};
+      const parsed = texts.get(note.path);
+      note.hay = [titleOf(note), note.fallback, note.num, ...(m.sections || []), parsed ? parsed.text : ''].join('\n').toLowerCase();
+    }
+    return note.hay;
+  }
+
+  function paint(note, terms) {
+    const m = meta[note.path];
+    note.top.replaceChildren(...[
+      note.num && el('span', 'card-src', note.num),
+      m && m.words && el('span', 'card-time', readingTime(m.words)),
+    ].filter(Boolean));
+    note.link.replaceChildren(...highlight(titleOf(note), terms));
+    note.link.href = readerUrl(note, terms.length ? state.q : '');
+    const hit = terms.length ? snippet(note, terms) : null;
+    if (hit) note.idea.replaceChildren(...(hit.section ? [el('b', null, hit.section), ' › '] : []), ...highlight(hit.text, terms));
+    else note.idea.replaceChildren(...highlight(m && m.sections ? m.sections.join(' · ') : '', terms));
+  }
+
+  function update() {
+    const terms = termsOf(state.q);
+    const last = store.get(LAST_KEY) || {};
+    let shown = 0;
+    for (const group of groups) {
+      let count = 0;
+      for (const note of group.notes) {
+        const match = terms.every(t => haystack(note).includes(t));
+        note.card.hidden = !match;
+        if (match) { count++; paint(note, terms); }
+      }
+      group.el.hidden = !count;
+      group.count.textContent = `${terms.length ? count + ' of ' : ''}${group.notes.length} ${group.notes.length === 1 ? 'note' : 'notes'}`;
+      shown += count;
+      const resume = group.notes.find(n => n.key === last[group.dir]);
+      group.go.href = readerUrl(resume || group.notes[0]);
+      group.go.textContent = resume ? `Continue: ${resume.num ? resume.num + ' · ' : ''}${titleOf(resume)} →` : 'Start reading →';
+      group.go.hidden = terms.length > 0;
+    }
+    const noun = notes.length === 1 ? 'note' : 'notes';
+    ui.count.textContent = terms.length ? `${shown} of ${notes.length} ${noun}` : `${notes.length} ${noun}`;
+    ui.clear.hidden = !terms.length;
+    ui.none.hidden = shown > 0 || !notes.length;
+  }
+
+  // Fetch every note once the panel is first shown: cached details first, then fresh ones.
+  let loading = false;
+  function load() {
+    if (loading || !notes.length) return;
+    loading = true;
+    for (const note of notes) note.card.classList.toggle('is-loading', !meta[note.path]);
+    let queued = false;
+    const refresh = () => {
+      if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; update(); }); }
+    };
+    const queue = [...notes];
+    const worker = async () => {
+      for (let note; (note = queue.shift());) {
+        try {
+          const res = await fetch(encodePath(note.path), { cache: 'no-cache' });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const parsed = parseNote(await res.text());
+          texts.set(note.path, parsed);
+          meta[note.path] = { title: parsed.title, sections: parsed.sections, words: parsed.words };
+          note.hay = null;
+        } catch (e) { /* keep the cached or file-name details; the link still works */ }
+        note.card.classList.remove('is-loading');
+        refresh();
+      }
+    };
+    Promise.all(Array.from({ length: Math.min(4, notes.length) }, worker)).then(() => {
+      update();
+      const next = {};
+      for (const note of notes) if (meta[note.path]) next[note.path] = meta[note.path];
+      store.set(META_KEY, next);
+    });
+  }
+
+  ui.q.addEventListener('input', () => { state.q = ui.q.value.trim(); update(); });
+  ui.clear.addEventListener('click', () => {
+    ui.q.value = '';
+    state.q = '';
+    update();
+    ui.q.focus();
+  });
+  document.addEventListener('keydown', e => {
+    const typing = e.target instanceof Element && e.target.closest('input, select, textarea, [contenteditable]');
+    if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || typing || e.defaultPrevented || ui.q.closest('[hidden]')) return;
+    e.preventDefault();
+    ui.q.focus();
+  });
+  addEventListener('pageshow', e => { if (e.persisted) update(); }); // back from a note: refresh "Continue"
+
+  /* ---- tabs ---- */
+
+  const TAB_KEY = 'interview-notes:tab';
+  const tablist = $('.tabs');
+  const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+  const tabNamed = name => tabs.find(t => t.dataset.tab === name);
+
+  function select(tab, remember) {
+    for (const t of tabs) {
+      const on = t === tab;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    }
+    if (remember) {
+      history.replaceState(history.state, '', '#' + tab.dataset.tab);
+      store.set(TAB_KEY, tab.dataset.tab);
+    }
+    if (tab.dataset.tab === 'notes') load();
+  }
+  tablist.addEventListener('click', e => {
+    const tab = e.target.closest('[role="tab"]');
+    if (tab) select(tab, true);
+  });
+  tablist.addEventListener('keydown', e => {
+    const i = tabs.indexOf(e.target);
+    const to = { ArrowLeft: i - 1, ArrowRight: i + 1, Home: 0, End: tabs.length - 1 }[e.key];
+    if (i === -1 || to === undefined) return;
+    e.preventDefault();
+    const tab = tabs[(to + tabs.length) % tabs.length];
+    select(tab, true);
+    tab.focus();
+  });
+  addEventListener('hashchange', () => {
+    const tab = tabNamed(location.hash.slice(1));
+    if (tab) select(tab, false);
+  });
+
+  $('.n', tabNamed('notes')).textContent = notes.length;
+  $('.n', tabNamed('visualizers')).textContent = document.querySelectorAll('#grid > .card').length;
+  ui.toolbar.hidden = !notes.length;
+  ui.empty.hidden = notes.length > 0;
+  state.q = ui.q.value.trim(); // the browser may restore this on back/forward
+  update();
+  tablist.hidden = false;
+  select(tabNamed(location.hash.slice(1)) || tabNamed(store.get(TAB_KEY)) || tabs[0], false);
 })();
 </script>
 </body>

@@ -1,0 +1,17 @@
+{%- comment -%}
+  JSON array of every Markdown file inside a folder, such as ["Java_SpringBoot/01_Core_Java_OOP.md"].
+  index.html and notes.html both embed it, so a note only has to be added to a folder to show up.
+  Top-level Markdown files are the repo README and study plans rather than notes, so they are left out.
+  "<" is escaped so no file name can end the <script> element this is placed in.
+{%- endcomment -%}
+{%- assign paths = "" | split: "" -%}
+{%- for file in site.static_files -%}
+  {%- assign ext = file.extname | downcase -%}
+  {%- assign path = file.path | remove_first: "/" -%}
+  {%- if path contains "/" -%}
+    {%- if ext == ".md" or ext == ".markdown" -%}
+      {%- assign paths = paths | push: path -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{{- paths | jsonify | replace: "<", "\u003c" -}}

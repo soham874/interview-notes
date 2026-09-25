@@ -1,13 +1,22 @@
-# GitHub Pages builds this repo with Jekyll. index.html uses that build to list every
-# page in Visualizers/, so a new visualizer only has to be added to that folder.
+# GitHub Pages builds this repo with Jekyll. index.html uses that build to list every page in
+# Visualizers/ and every Markdown note inside a folder (Java_SpringBoot/ and any folder added
+# later), and notes.html shows a note alongside the rest of its folder.
 #
-# A Pages site is public even when the repo is private, so only the homepage and the
-# visualizers are published. Everything matched below stays in the repo but is left off
-# the site; remove a line to publish it.
+# Notes are published as the plain .md files and rendered in the browser by notes.html. Letting
+# Jekyll render them would first run Liquid over them, which mangles code such as
+# `int[][] grid = {{1, 2}, {3, 4}};` and fails the whole build on a stray `{%`.
+require_front_matter: true   # keep .md files without front matter as plain files...
+readme_index:
+  enabled: false             # ...README.md files included
+
+# A Pages site is public even when the repo is private. These stay in the repo but off the site:
+# the top-level Markdown files are the repo README and study plans rather than notes. Remove a
+# line to publish it.
 exclude:
-  - "*.md"
+  - README.md
+  - DSA_Restart_Plan.md
+  - Java_SpringBoot_Prep_Tracker.md
   - "*.pdf"
-  - Java_SpringBoot
 
 # index.html carries its own styling, so skip the default theme's stylesheet.
 theme: null
