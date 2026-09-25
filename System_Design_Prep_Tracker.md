@@ -63,14 +63,14 @@ When every row in a group sits at 4+, do one timed 45-minute mock on a system fr
 |---|---|---|---|---|---|
 | 17 | ◆ [Disney+ video streaming (on demand, incl. downloads)](System_Design/17_Disney_Plus_Video_Streaming.md) | Transcoding ladder, HLS/DASH + DRM, CDNs, entitlement at play time, time to first frame, offline licenses | Streaming | | |
 | 18 | ◆ [Premiere / live-event traffic spike](System_Design/18_Premiere_Traffic_Spike.md) | Forecast-based pre-scaling, panic mode (load shedding), retry storms, protecting the playback path | Streaming, ESPN | | |
-| 19 | ○ Live sports streaming | Live ingest and transcoding, low-latency HLS/DASH, the DVR window, ad-break markers, glass-to-glass latency | ESPN | | |
+| 19 | ○ [Live sports streaming](System_Design/19_Live_Sports_Streaming.md) | Live ingest and transcoding, low-latency HLS/DASH, the DVR window, ad-break markers, glass-to-glass latency | ESPN | | |
 
 ## F. Real-time fan-out
 
 | # | System | What it teaches | Asked by | Conf. (1–5) | Last reviewed |
 |---|---|---|---|---|---|
 | 20 | ★ Live scores & alerts ("an ESPN-like system") | An ordered per-game stream, CDN polling vs sockets, push to tens of millions of phones, corrections | ESPN | | |
-| 21 | ◆ Fantasy sports: draft room + live scoring | Stateful WebSocket rooms, a server-side pick clock, optimistic concurrency on picks, player → team fan-out | ESPN | | |
+| 21 | ◆ [Fantasy sports: draft room + live scoring](System_Design/21_Fantasy_Sports.md) | Stateful WebSocket rooms, a server-side pick clock, optimistic concurrency on picks, player → team fan-out | ESPN | | |
 | 22 | ◆ Live chat | WebSocket gateways, presence, message ordering and storage, very large rooms | Any | | |
 | 23 | ○ Watch party (synchronized playback) | Shared control messages, clock-offset estimation, drift correction | Streaming | | |
 | 24 | ★ Photo-sharing feed (Instagram) | Upload pipeline, fan-out on write vs on read, the celebrity problem, feed ranking | Any (Hotstar) | | |
@@ -91,13 +91,13 @@ When every row in a group sits at 4+, do one timed 45-minute mock on a system fr
 | 29 | ◆ MyDisney single sign-on | OAuth2/OIDC, local JWT validation, TV device-code login, sign out everywhere, credential stuffing | Any | | |
 | 30 | ◆ [Subscriptions, bundles & billing](System_Design/30_Subscriptions_Billing.md) | Billing vs entitlements, idempotent webhooks, a subscription state machine, renewals and retries | Streaming | | |
 | 31 | ○ Payments & checkout | Idempotency keys, a payment state machine, provider webhooks, reconciliation, refunds | Parks, Any | | |
-| 32 | ◆ Catalog, rights & availability | Rules by country/date/plan/device, snapshots precomputed before windows open, the final check at play time | Streaming, Supply chain | | |
+| 32 | ◆ [Catalog, rights & availability](System_Design/32_Catalog_Rights_Availability.md) | Rules by country/date/plan/device, snapshots precomputed before windows open, the final check at play time | Streaming, Supply chain | | |
 
 ## I. Content supply chain
 
 | # | System | What it teaches | Asked by | Conf. (1–5) | Last reviewed |
 |---|---|---|---|---|---|
-| 33 | ◆ Media ingest & transcoding pipeline | Huge-file uploads, workflow orchestration, chunked parallel transcoding, resume instead of restart, priorities | Supply chain | | |
+| 33 | ◆ [Media ingest & transcoding pipeline](System_Design/33_Media_Ingest_Transcoding.md) | Huge-file uploads, workflow orchestration, chunked parallel transcoding, resume instead of restart, priorities | Supply chain | | |
 | 34 | ○ Media asset management & delivery workflow | Title/version/component model, publishing gated on dependencies, per-destination packages, securing unreleased content | Supply chain | | |
 
 ## J. Data, experiments & ads

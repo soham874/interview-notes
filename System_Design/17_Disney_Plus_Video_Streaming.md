@@ -11,7 +11,7 @@
 - Multiple audio languages and subtitles.
 - Downloads (Premium only in the US): up to 10 devices; content stays while subscribed and while the device reconnects at least every 30 days.
 - Plan limits: 2 simultaneous streams on Basic/Standard, 4 on Premium ([note 16](16_Concurrent_Stream_Limits.md)); ads on Basic (tracker #37).
-- Titles play only in licensed countries and date windows (tracker #32).
+- Titles play only in licensed countries and date windows ([note 32](32_Catalog_Rights_Availability.md)).
 
 **Non-functional — say numbers**
 
@@ -21,7 +21,7 @@
 - Content protection is contractual: DRM everywhere, hardware-backed DRM and HDCP for HD/4K, forensic watermarking for high-value early releases.
 - Cost: bandwidth dominates, so CDN offload (the cache-hit ratio) is a first-class requirement.
 
-**Say what's out of scope:** browse and recommendations (#26), search (#27), live (#19), billing ([note 30](30_Subscriptions_Billing.md)), ad decisioning (#37).
+**Say what's out of scope:** browse and recommendations (#26), search (#27), live ([note 19](19_Live_Sports_Streaming.md)), billing ([note 30](30_Subscriptions_Billing.md)), ad decisioning (#37).
 
 ## Back-of-envelope
 
@@ -164,7 +164,7 @@ The playback API is a **control plane**: it returns URLs and decisions, never vi
 
 - Check **at play time**, not when the tile was drawn: the tile may be minutes old, and the plan may have changed since.
 - The rendition set is an intersection: **plan** (Basic: 1080p, no Atmos) ∩ **device** (codecs, DRM security level, HDCP) ∩ **title** (what exists).
-- Availability comes from an in-memory, per-territory snapshot; windows that open at local midnight are precomputed before they open (tracker #32).
+- Availability comes from an in-memory, per-territory snapshot; windows that open at local midnight are precomputed before they open ([note 32](32_Catalog_Rights_Availability.md)).
 - Country comes from IP geolocation, checked against the account's country; the profile's maturity setting filters too.
 
 ### 6. Downloads
@@ -324,7 +324,7 @@ A session's life: `STARTING → PLAYING ⇄ PAUSED → ENDED`, or `EXPIRED` when
 |---|---|
 | Netflix | Its own CDN (Open Connect appliances inside ISPs) and per-shot encoding; the same control-plane / data-plane split |
 | YouTube | Uploads are the hard part: ingest and transcode at huge volume, with a quick low-res version first; a long-tail catalog means lower cache-hit ratios |
-| Twitch and live sports | Segments are made in real time, low-latency HLS/DASH, and every viewer wants the newest segment at once (tracker #19, [note 18](18_Premiere_Traffic_Spike.md)) |
+| Twitch and live sports | Segments are made in real time, low-latency HLS/DASH, and every viewer wants the newest segment at once ([note 19](19_Live_Sports_Streaming.md), [note 18](18_Premiere_Traffic_Spike.md)) |
 | Spotify | Audio: tiny files and no complex ladder, but the same offline-license model for downloads |
 | JioHotstar (Disney+ Hotstar before the JioStar merger) | The same architecture pushed to extreme live concurrency — 59M concurrent viewers for the 2023 Cricket World Cup final |
 | Zoom and video calls | Real-time: WebRTC over UDP, media servers instead of CDNs, sub-second latency — a different design entirely |
