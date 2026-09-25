@@ -78,37 +78,56 @@ The playback API is a **control plane**: it returns URLs and decisions, never vi
 
 **Offline — getting a title ready**
 
-```text
- Studio master (IMF / ProRes)
-    │  multipart upload, checksum
-    ↓
- Ingest + QC ──→ Encode planner ──→ Transcode workers
-                 (per-title ladder) (chunked, parallel)
-                                            │
-                                            ↓
-                  Packager: CMAF segments + HLS/DASH manifests,
-                  encrypted with per-tier keys from the KMS/HSM
-                                            │
-                    ┌───────────────────────┴───────────────┐
-                    ↓                                       ↓
-       Origin storage ──→ CDNs                    Catalog: title playable
-       (pre-position hot titles)
+```mermaid
+flowchart TD
+  accTitle: Offline: getting a title ready
+  accDescr: The studio master is uploaded with checksums, ingested and checked, given a per-title ladder by the encode planner, and encoded by transcode workers in parallel chunks. The packager writes CMAF segments and HLS/DASH manifests, encrypted with per-tier keys from the KMS/HSM, to origin storage, which pre-positions hot titles on the CDNs, and the catalog marks the title playable.
+
+  master(["Studio master<br>(IMF / ProRes)"])
+  ingest["Ingest + QC"]
+  planner["Encode planner<br>(per-title ladder)"]
+  workers["Transcode workers<br>(chunked, parallel)"]
+  kms[("KMS / HSM")]
+  packager["Packager: CMAF<br>segments + HLS/DASH<br>manifests, encrypted"]
+  origin[("Origin storage")]
+  cdns["CDNs"]
+  catalog["Catalog:<br>title playable"]
+
+  master -- "multipart upload,<br>checksum" --> ingest --> planner --> workers --> packager
+  kms -- "per-tier keys" --> packager
+  packager --> origin -- "pre-position<br>hot titles" --> cdns
+  packager --> catalog
 ```
 
 **Online — pressing Play**
 
-```text
- Player ──1──→ Gateway ──→ Playback service ─┬─→ Entitlements (plan, tier)
-   ↑                                         ├─→ Availability (country, window)
-   │                                         ├─→ Stream limits (note 16)
-   │                                         ├─→ Bookmarks (resume point)
-   │                                         └─→ CDN selector + URL signer
-   │←── sessionId, signed manifest URL, license URL, ranked CDNs
-   │
-   ├──2──→ CDN edge ──miss──→ origin shield ──→ origin   manifest + segments
-   ├──3──→ License service ──→ key store (KMS/HSM)       content keys
-   └──4──→ Heartbeats + QoE events ──→ Kafka ──→ leases, bookmarks,
-                                                 CDN steering, alerts
+```mermaid
+flowchart LR
+  accTitle: Online: pressing Play
+  accDescr: 1, the player asks the playback service, through the gateway, to start; it checks entitlements, availability, stream limits and bookmarks, and the CDN selector ranks CDNs and signs the URL, and the player gets back a session ID, a signed manifest URL, a license URL and the ranked CDNs. 2, the player fetches the manifest and segments from a CDN edge, which goes to the origin shield and origin on a miss. 3, it gets content keys from the license service, backed by the key store. 4, heartbeats and QoE events go to Kafka, which feeds leases, bookmarks, CDN steering and alerts.
+
+  player(["Player"])
+  gateway["Gateway"]
+  playback["Playback service"]
+  entitlements["Entitlements<br>(plan, tier)"]
+  availability["Availability<br>(country, window)"]
+  limits["Stream limits<br>(note 16)"]
+  bookmarks["Bookmarks<br>(resume point)"]
+  selector["CDN selector<br>+ URL signer"]
+  cdnEdge["CDN edge"]
+  shield["Origin shield"]
+  origin[("Origin")]
+  license["License service"]
+  keys[("Key store<br>(KMS/HSM)")]
+  kafka[/"Kafka"/]
+  consumers["Leases, bookmarks,<br>CDN steering, alerts"]
+
+  player -- "1" --> gateway --> playback
+  playback --> entitlements & availability & limits & bookmarks & selector
+  playback -. "sessionId, signed<br>manifest URL, license<br>URL, ranked CDNs" .-> player
+  player -- "2 · manifest<br>+ segments" --> cdnEdge -- "miss" --> shield --> origin
+  player -- "3 · content<br>keys" --> license --> keys
+  player -- "4 · heartbeats<br>+ QoE events" --> kafka --> consumers
 ```
 
 **From Play to the first frame**

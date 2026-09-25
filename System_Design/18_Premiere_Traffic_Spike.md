@@ -25,23 +25,28 @@
 
 ## Architecture for the event
 
-```text
- Clients: jittered retries, cached remote config, prefetched content
-   │
-   ↓
- CDN / edge: static home page, cached catalog and manifests, WAF,
-             rate limits, pre-positioned encrypted segments
-   │
-   ↓
- API gateway: tag each request P0–P3, shed the lowest first,
-              adaptive concurrency limits, cheap 503 + Retry-After
-   │
-   ├──→ P0  playback, license, stream limits   pre-scaled, own bulkheads
-   ├──→ P1  browse, catalog                    cache first
-   ├──→ P2  personalization, search            first to go
-   └──→ writes: heartbeats, progress, QoE ──→ Kafka, drained later
+```mermaid
+flowchart TD
+  accTitle: Architecture for the event
+  accDescr: Clients retry with jitter and use cached config and prefetched content. The CDN edge serves the static home page, cached catalog and manifests and pre-positioned encrypted segments, behind a WAF and rate limits. The API gateway tags each request P0 to P3 and sheds the lowest first, with adaptive concurrency limits and cheap 503s with Retry-After. P0 playback, license and stream limits are pre-scaled with their own bulkheads; P1 browse and catalog are cache first; P2 personalization and search are the first to go; writes go to Kafka and are drained later. A war room with SLO dashboards, runbooks and owners controls the panic-mode flags.
 
- Panic-mode flags ←── war room: SLO dashboards, runbooks, owners
+  clients(["Clients: jittered retries,<br>cached remote config,<br>prefetched content"])
+  cdnEdge["CDN / edge<br>static home page, cached<br>catalog and manifests,<br>WAF, rate limits,<br>pre-positioned<br>encrypted segments"]
+  gateway["API gateway<br>tag each request P0–P3,<br>shed the lowest first,<br>adaptive concurrency<br>limits, cheap 503<br>+ Retry-After"]
+  p0["P0<br>playback, license,<br>stream limits<br>pre-scaled,<br>own bulkheads"]:::p0
+  p1["P1<br>browse, catalog<br>cache first"]
+  p2["P2<br>personalization,<br>search<br>first to go"]
+  writes["Writes<br>heartbeats,<br>progress, QoE"]
+  kafka[/"Kafka<br>drained later"/]
+  warRoom(["War room<br>SLO dashboards,<br>runbooks, owners"])
+  panic["Panic-mode flags"]
+
+  clients --> cdnEdge --> gateway
+  gateway --> p0 & p1 & p2 & writes
+  writes --> kafka
+  warRoom --> panic
+
+  classDef p0 stroke-width:3px
 ```
 
 ## The playbook, by phase
