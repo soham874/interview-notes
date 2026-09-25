@@ -43,7 +43,7 @@ What the reports agree on:
 | Virtual queue, merch-drop waitlist | Flash sale + waiting room | Fair, exactly-once allocation when all demand lands in one second |
 | Live scores, "new episode" alerts | Pub/sub fan-out + push notifications | One event to tens of millions of devices in seconds |
 | Game leaderboard | Sorted sets / top-K | Rank queries at scale, ties, season resets |
-| 4 streams per account | Distributed semaphore with leases | Devices that die without releasing their slot |
+| 2–4 streams per account, by plan | Distributed semaphore with leases | Devices that die without releasing their slot |
 | Premiere or live-match spike | Pre-scaling + load shedding | Traffic arrives faster than autoscaling reacts |
 | Disney+ playback | Video streaming (Netflix/YouTube) | Time to first frame: auth + entitlement + manifest + DRM license + first segment |
 | MyDisney login everywhere | SSO / OAuth2 identity provider | Every app depends on it — it must not take playback down with it |
@@ -67,6 +67,8 @@ Per AWS and Disney's own re:Invent 2020 talk, Disney+ writes bookmarks to Dynamo
 - **Follow-ups to expect:** why NoSQL over SQL (single-key access, huge write volume, no joins — you'd have to shard Postgres by profile anyway; say when SQL *would* win); what if heartbeats are lost (the next one fixes it; always send on pause/stop); how the home page stays fast during a launch.
 
 ### 2. Disney+ playback path + surviving launch day
+
+Full notes: [17 · Disney+ video streaming](17_Disney_Plus_Video_Streaming.md) and [18 · traffic spikes](18_Premiere_Traffic_Spike.md).
 
 - **Content prep (offline):** mezzanine → transcode to an ABR ladder (resolutions × bitrates × codecs, HDR variants) → package as CMAF with HLS and DASH manifests → encrypt with common encryption so one set of segments can serve every platform, with Widevine, PlayReady and FairPlay license servers handing out keys → origin storage → multiple CDNs.
 - **Play (online):** client → playback API: validate token → entitlement (plan, country availability, a free concurrent-stream slot, profile maturity) → pick renditions the device supports and a CDN (steered by live QoE data) → return a signed manifest URL + license URL → client fetches manifest, segments and license from there.
@@ -125,11 +127,13 @@ When Disney World runs a virtual queue for a ride, joins open at **7 AM** (from 
 - **Correctness:** per-game sequence numbers so clients drop stale or duplicate updates; scoring changes arrive as correction events, not silent edits.
 - **Follow-ups:** reaching 20M devices in under a minute; the thundering herd right after a push; SSE vs WebSocket vs polling.
 
-### 7. Four streams per account (concurrency & sharing)
+### 7. Stream limits per account (concurrency & sharing)
 
-Disney+ allows 4 simultaneous streams and up to 7 profiles; paid sharing adds one "Extra Member" (one stream at a time) and prompts TVs outside the household ("This TV doesn't seem to be part of the Household for this account").
+Full note: [16 · stream limits](16_Concurrent_Stream_Limits.md).
 
-- **Design:** a lease-based distributed semaphore. On play, atomically add `{sessionId → leaseExpiry}` to the account's active-stream set only if fewer than 4 are live (Redis Lua script, or a DynamoDB conditional update on a version). The playback heartbeats from #1 renew the lease; a crashed device frees its slot when the lease expires; stop releases it explicitly.
+Disney+ (US) allows 2 simultaneous streams on Basic/Standard and 4 on Premium, with up to 7 profiles; paid sharing adds one "Extra Member" (one stream at a time) and prompts TVs outside the household ("This TV doesn't seem to be part of the Household for this account").
+
+- **Design:** a lease-based distributed semaphore. On play, atomically add `{sessionId → leaseExpiry}` to the account's active-stream set only if fewer than the plan's limit are live (Redis Lua script, or a DynamoDB conditional update on a version). The playback heartbeats from #1 renew the lease; a crashed device frees its slot when the lease expires; stop releases it explicitly.
 - **Enforce it server-side:** tie DRM license renewal to holding a lease — a client can ignore an API "no", but it can't keep decrypting without a license.
 - **The real question — failure mode:** if the lease store is down, **fail open** (let paying viewers watch, reconcile later) rather than closed; a few minutes of over-admission costs less than a premiere outage. Say why.
 - **Follow-ups:** "sign out of all devices" (revoke refresh tokens + drop leases); multi-region (home each account's lease set in one region, or accept brief over-admission).
@@ -138,7 +142,7 @@ Disney+ allows 4 simultaneous streams and up to 7 profiles; paid sharing adds on
 
 ### Streaming & identity
 
-- **Subscriptions, bundles & entitlements** — plans and bundles across Disney+, Hulu and ESPN, bought on the web or through Apple/Google/Roku billing. Split **billing** (money, renewals, retries) from **entitlements** (what this account can do right now). Provider webhooks → idempotent processing (dedupe on event id) → subscription state machine (trial → active → grace → cancelled/expired) → recompute an entitlement set (`hulu_with_ads`, `espn_unlimited`, `max_streams=4`) → push invalidation so an upgrade applies immediately. Follow-ups: never double-charge (idempotency key per account per billing period); a webhook arriving before the purchase redirect; grandfathered prices (versioned plans).
+- **Subscriptions, bundles & entitlements** — plans and bundles across Disney+, Hulu and ESPN, bought on the web or through Apple/Google/Roku billing. Split **billing** (money, renewals, retries) from **entitlements** (what this account can do right now). Provider webhooks → idempotent processing (dedupe on event id) → subscription state machine (trial → active → grace → cancelled/expired) → recompute an entitlement set (`hulu_with_ads`, `espn_unlimited`, `max_streams=4`) → push invalidation so an upgrade applies immediately. Follow-ups: never double-charge (idempotency key per account per billing period); a webhook arriving before the purchase redirect; grandfathered prices (versioned plans). Full note: [30 · subscriptions & billing](30_Subscriptions_Billing.md).
 - **Catalog, rights & availability** — what's playable depends on country, date window, plan and device, and merging Hulu into Disney+ combines two catalogs. A read-heavy, edge-cached metadata service + availability rules `(titleId, territory, start, end, tiers, platforms)`; precompute per-territory snapshots *before* a window opens (local midnight in each territory) rather than at T-0; the authoritative check runs at play time, not when a tile is drawn.
 - **MyDisney single sign-on** — one login across Disney+, Hulu, ESPN, ABC, the parks, Disney Cruise Line and the Disney Store (since April 2024). OIDC/OAuth2 identity provider; short-lived JWT access tokens that services validate *locally* with cached signing keys (so an identity-service blip doesn't stop playback) + refresh tokens; TVs sign in with the device-code flow (RFC 8628 — code on the TV, approve on the phone); "sign out everywhere" = revoke refresh tokens; credential-stuffing defenses (per-IP/account rate limits, breached-password checks); merging legacy duplicate accounts; stricter rules for kids' data.
 - **Watchlist** — per-profile CRUD at huge scale (PK `profileId`, SK `titleId`), idempotent add/remove, read-your-writes across devices. A common warm-up or add-on to #1.
@@ -202,7 +206,7 @@ India loops in particular often make the design round object-oriented — Hotsta
 ## Numbers worth having ready
 
 - Disney+ bookmarks: billions a day, Kinesis → DynamoDB global tables (re:Invent 2020).
-- Disney+: 4 concurrent streams, up to 7 profiles; an Extra Member gets 1 stream.
+- Disney+ (US): 2 concurrent streams on Basic/Standard, 4 on Premium; up to 7 profiles; an Extra Member gets 1 stream. Downloads are Premium-only: up to 10 devices, reconnecting at least every 30 days.
 - Lightning Lane: opens 7 AM ET — 7 days ahead for resort guests (whole stay, up to 14 days), 3 days for everyone else.
 - Virtual queue: 7 AM (anywhere) and 1 PM (in park); 1 hour to return once called.
 - Hotstar: 25M concurrent viewers in 2019 — the standard live-spike case study.
@@ -215,7 +219,7 @@ India loops in particular often make the design round object-oriented — Hotsta
 - Why a key-value store for watch progress instead of Postgres? What would make you choose Postgres?
 - 2M people tap "Join" at 7:00:00 — how do you hand out boarding groups fairly, exactly once per party?
 - Two guests go for the last Lightning Lane slot at the same instant. Walk through the write. Optimistic or pessimistic, and why?
-- How do you enforce "4 streams per account" when a device crashes without saying goodbye — and what happens if that check's datastore is down?
+- How do you enforce the per-plan stream limit (2 or 4) when a device crashes without saying goodbye — and what happens if that check's datastore is down?
 - A premiere will bring 10× normal traffic at a fixed time. What do you do the week before, the hour before, and while it's melting?
 - What do you turn off first when overloaded, and how do you decide?
 - Send a score alert to 20M followers in under a minute.
@@ -237,6 +241,6 @@ Product and architecture facts:
 
 - [How Disney+ scales globally on Amazon DynamoDB (re:Invent 2020)](https://www.youtube.com/watch?v=TCnmtSY2dFM) · [Scaling hotstar.com for 25 million concurrent viewers (re:Invent 2019)](https://d1.awsstatic.com/events/reinvent/2019/Scaling_Hotstar.com_for_25_million_concurrent_viewers_CMY302.pdf)
 - [Lightning Lane booking windows](https://www.undercovertourist.com/blog/disney-lightning-lane-faq/) · [Virtual queues at Walt Disney World](https://wdwprepschool.com/disney-world-virtual-queue/) · [New virtual queues, Nov 2025](https://allears.net/2025/11/17/disney-world-just-quietly-added-a-new-virtual-queue/)
-- [Disney+ concurrent streams](https://help.disneyplus.com/article/disneyplus-en-ca-concurrent-streams) · [Paid sharing on Disney+](https://thewaltdisneycompany.com/news/paid-sharing-disney-explainer/) · [MyDisney login](https://thewaltdisneycompany.com/news/mydisney-seamless-login-faq-what-you-need-to-know/) · [GroupWatch removed](https://whatsondisneyplus.com/disney-removes-groupwatch-feature/)
+- [Disney+ concurrent streams](https://help.disneyplus.com/article/disneyplus-en-ca-concurrent-streams) · [Disney+ downloads](https://help.disneyplus.com/article/disneyplus-downloads) · [Paid sharing on Disney+](https://thewaltdisneycompany.com/news/paid-sharing-disney-explainer/) · [MyDisney login](https://thewaltdisneycompany.com/news/mydisney-seamless-login-faq-what-you-need-to-know/) · [GroupWatch removed](https://whatsondisneyplus.com/disney-removes-groupwatch-feature/)
 - [ESPN direct-to-consumer launch](https://thewaltdisneycompany.com/news/espns-direct-to-consumer-launch-date/) · [Hulu merging into the Disney+ app](https://www.cbsnews.com/news/hulu-disney-plus-app/) · [DRAX and Disney Compass](https://www.marketingdive.com/news/disney-compass-seeks-true-north-data-collaboration-amazon/750861/)
 - [JioStar merger completed](https://www.jiostar.com/news/reliance-and-disney-announce-completion-of-transaction-to-form-joint-venture-to-bring-together-the-most-iconic-and-engaging-entertainment-brands-in-india/) · [Disney technology jobs in Bengaluru](https://www.disneycareers.com/en/location/bengaluru-jobs/391/1269750-1267701-1277333/4)

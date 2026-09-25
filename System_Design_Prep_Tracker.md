@@ -1,6 +1,6 @@
 # System Design Prep Tracker
 
-Companion to `Java_SpringBoot_Prep_Tracker.md` — same idea, for the design round, aimed at Disney. `System_Design/00_Disney_System_Design_Questions.md` covers which Disney org asks what and what candidates have reported; this file is the map of every system worth practising, plus the progress log. Each system gets its own note in `System_Design/` as we go, numbered to match this list (`System_Design/14_Continue_Watching.md` and so on).
+Companion to `Java_SpringBoot_Prep_Tracker.md` — same idea, for the design round, aimed at Disney. `System_Design/00_Disney_System_Design_Questions.md` covers which Disney org asks what and what candidates have reported; this file is the map of every system worth practising, plus the progress log. Each system gets its own note in `System_Design/` as we go, numbered to match this list; a system's name links to its note once it exists.
 
 **Priority:** ★ reported by a candidate in a Disney, Hulu or Hotstar interview · ◆ named by prep guides, or a direct model of a Disney product — likely · ○ classic or supporting — good to know.
 
@@ -55,14 +55,14 @@ When every row in a group sits at 4+, do one timed 45-minute mock on a system fr
 |---|---|---|---|---|---|
 | 14 | ★ Continue Watching (+ recommendations row) | Heartbeats through a stream, coalescing, conditional writes so the newest position wins, NoSQL modeling, multi-region | Streaming | | |
 | 15 | ◆ Watchlist | Per-profile CRUD at huge scale, idempotent add/remove, read-your-writes across devices | Streaming | | |
-| 16 | ◆ Concurrent stream limits & household sharing | A distributed semaphore with leases, heartbeat renewal, DRM-backed enforcement, fail open vs closed | Streaming | | |
+| 16 | ◆ [Concurrent stream limits & household sharing](System_Design/16_Concurrent_Stream_Limits.md) | A distributed semaphore with leases, heartbeat renewal, DRM-backed enforcement, fail open vs closed | Streaming | | |
 
 ## E. Video streaming
 
 | # | System | What it teaches | Asked by | Conf. (1–5) | Last reviewed |
 |---|---|---|---|---|---|
-| 17 | ◆ Disney+ video streaming (on demand, incl. downloads) | Transcoding ladder, HLS/DASH + DRM, CDNs, entitlement at play time, time to first frame, offline licenses | Streaming | | |
-| 18 | ◆ Premiere / live-event traffic spike | Forecast-based pre-scaling, panic mode (load shedding), retry storms, protecting the playback path | Streaming, ESPN | | |
+| 17 | ◆ [Disney+ video streaming (on demand, incl. downloads)](System_Design/17_Disney_Plus_Video_Streaming.md) | Transcoding ladder, HLS/DASH + DRM, CDNs, entitlement at play time, time to first frame, offline licenses | Streaming | | |
+| 18 | ◆ [Premiere / live-event traffic spike](System_Design/18_Premiere_Traffic_Spike.md) | Forecast-based pre-scaling, panic mode (load shedding), retry storms, protecting the playback path | Streaming, ESPN | | |
 | 19 | ○ Live sports streaming | Live ingest and transcoding, low-latency HLS/DASH, the DVR window, ad-break markers, glass-to-glass latency | ESPN | | |
 
 ## F. Real-time fan-out
@@ -89,7 +89,7 @@ When every row in a group sits at 4+, do one timed 45-minute mock on a system fr
 | # | System | What it teaches | Asked by | Conf. (1–5) | Last reviewed |
 |---|---|---|---|---|---|
 | 29 | ◆ MyDisney single sign-on | OAuth2/OIDC, local JWT validation, TV device-code login, sign out everywhere, credential stuffing | Any | | |
-| 30 | ◆ Subscriptions, bundles & billing | Billing vs entitlements, idempotent webhooks, a subscription state machine, renewals and retries | Streaming | | |
+| 30 | ◆ [Subscriptions, bundles & billing](System_Design/30_Subscriptions_Billing.md) | Billing vs entitlements, idempotent webhooks, a subscription state machine, renewals and retries | Streaming | | |
 | 31 | ○ Payments & checkout | Idempotency keys, a payment state machine, provider webhooks, reconciliation, refunds | Parks, Any | | |
 | 32 | ◆ Catalog, rights & availability | Rules by country/date/plan/device, snapshots precomputed before windows open, the final check at play time | Streaming, Supply chain | | |
 
