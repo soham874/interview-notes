@@ -1,0 +1,822 @@
+---
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Notes · Interview Notes</title>
+<meta name="description" content="Revision notes by topic, read straight from the Markdown files in this repo.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#EEF1F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1219" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B7A85'/%3E%3Cpath d='M9.5 23v-6M16 23V9M22.5 23v-9.5' stroke='%23fff' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<!--
+  Note reader for GitHub Pages. Notes are the Markdown files inside the repo's folders, published
+  as-is (see _config.yml). The Jekyll build lists them in note-paths at the bottom of this page; the
+  script then shows the note named in ?note=, turning its Markdown into HTML with marked, cleaning
+  that with DOMPurify and colouring code with highlight.js. The libraries are pinned, and the
+  integrity hashes make the browser refuse any other file served under those URLs.
+-->
+<script defer src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js" integrity="sha384-2vpGtuKqJvFlwJqYnf/wUMuzUfhUnYBt9oay0e2yaFcq0Dh6/aEbQ8YAOeKGzlYo" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js" integrity="sha384-a7SzOxErzJ3ZpQz0zJ32d67dSitNzPcbfybc/ykU9KJhMgZkwqfSxlhhdJRS+XGL" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/highlight.min.js" integrity="sha384-wjfDDhOPPdjtva8vWBhWeVprSpmxisEu5aYT3q1JyACqXpdKpo3PWZTMVq24MBix" crossorigin="anonymous"></script>
+<style>
+:root{
+  --bg:#EEF1F5; --surface:#FFFFFF; --surface-2:#E4E9F0; --ink:#121925; --ink-2:#4B5668; --ink-3:#7A8699; --line:#D3DAE4;
+  --accent:#0B7A85; --accent-ink:#FFFFFF; --accent-soft:#D5ECEE; --hit:#FFE08A; --hit-ink:#121925;
+  --note:#1C6FD1; --tip:#1F7A38; --important:#7E4FD0; --warning:#8F6200; --caution:#C42A2A;
+  --code-bg:#0F1620; --code-ink:#D7DEE8;
+  --tk-kw:#F28FAD; --tk-str:#A6E3A1; --tk-num:#FAB387; --tk-com:#8391A5; --tk-fn:#89B4FA; --tk-type:#94E2D5; --tk-meta:#F9E2AF;
+  --shadow:0 1px 2px rgb(18 25 37 / .06), 0 10px 26px -14px rgb(18 25 37 / .28);
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --bar:56px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0D1219; --surface:#151C26; --surface-2:#1D2632; --ink:#E5EAF1; --ink-2:#A2ADBD; --ink-3:#6F7C8F; --line:#28323F;
+  --accent:#3CC3CF; --accent-ink:#06282C; --accent-soft:#143339; --hit:#6B5A12; --hit-ink:#F4F6F9;
+  --note:#5AA2F5; --tip:#4CC46C; --important:#B08CF5; --warning:#E8B53A; --caution:#FF6464;
+  --code-bg:#0A0F15;
+  --shadow:0 1px 2px rgb(0 0 0 / .3), 0 12px 30px -14px rgb(0 0 0 / .75);
+}}
+:root[data-theme="dark"]{
+  --bg:#0D1219; --surface:#151C26; --surface-2:#1D2632; --ink:#E5EAF1; --ink-2:#A2ADBD; --ink-3:#6F7C8F; --line:#28323F;
+  --accent:#3CC3CF; --accent-ink:#06282C; --accent-soft:#143339; --hit:#6B5A12; --hit-ink:#F4F6F9;
+  --note:#5AA2F5; --tip:#4CC46C; --important:#B08CF5; --warning:#E8B53A; --caution:#FF6464;
+  --code-bg:#0A0F15;
+  --shadow:0 1px 2px rgb(0 0 0 / .3), 0 12px 30px -14px rgb(0 0 0 / .75);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:calc(var(--bar) + 20px);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 var(--f-body);-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip{position:absolute;top:-60px;left:12px;z-index:60;padding:8px 14px;border-radius:8px;background:var(--accent);color:var(--accent-ink);font-weight:600;text-decoration:none}
+.skip:focus{top:10px}
+
+/* top bar */
+.bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;height:var(--bar);padding:0 clamp(12px,3vw,24px);border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px)}
+.home{display:inline-flex;flex:none;align-items:center;gap:9px;color:var(--ink);font:700 1.02rem/1 var(--f-display);letter-spacing:-.01em;text-decoration:none}
+.home:hover{color:var(--accent)}
+.home svg{flex:none}
+.crumb{min-width:0;overflow:hidden;color:var(--ink-2);font-size:.9rem;white-space:nowrap;text-overflow:ellipsis}
+.crumb:not(:empty)::before{content:"/";margin-right:10px;color:var(--ink-3)}
+.icon-btn{display:inline-flex;flex:none;align-items:center;justify-content:center;gap:7px;height:36px;min-width:36px;padding:0 10px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink-2);font:500 .86rem/1 var(--f-body);text-decoration:none;cursor:pointer}
+.icon-btn:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));color:var(--ink)}
+.source{margin-left:auto}
+@media (max-width:599px){.source{padding:0}.source span{display:none}}
+@media (max-width:359px){.home span{display:none}}
+
+/* layout: notes list | note | contents */
+.layout{display:grid;grid-template-columns:272px minmax(0,1fr) 236px;max-width:1480px;margin:0 auto}
+.main{min-width:0;padding:clamp(24px,4vw,48px) clamp(16px,4vw,56px) 96px}
+.doc,.pager{max-width:780px;margin-inline:auto}
+
+/* every note, grouped by folder */
+.side{position:sticky;top:var(--bar);align-self:start;height:calc(100vh - var(--bar));height:calc(100dvh - var(--bar));overflow-y:auto;overscroll-behavior:contain;padding:16px 12px 48px 16px;border-right:1px solid var(--line);scrollbar-width:thin}
+.side-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px;margin:0 0 8px;padding:0 8px}
+.side-head a{color:var(--ink-2);font:600 .72rem/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;text-decoration:none}
+.side-head a:hover{color:var(--accent)}
+.side-close{display:none}
+.side-group + .side-group{margin-top:12px}
+.side-group > summary{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;color:var(--ink);font:700 .95rem/1.3 var(--f-display);cursor:pointer;list-style:none}
+.side-group > summary::-webkit-details-marker{display:none}
+.side-group > summary::before{content:"";flex:none;width:7px;height:7px;margin:0 3px 0 1px;border:solid var(--ink-3);border-width:0 2px 2px 0;transform:rotate(-45deg);transition:transform .15s ease}
+.side-group[open] > summary::before{transform:rotate(45deg)}
+.side-group > summary:hover{background:var(--surface-2)}
+.side-n{margin-left:auto;color:var(--ink-2);font:600 .72rem/1 var(--f-mono)}
+.side ol{margin:4px 0 0;padding:0;list-style:none}
+.side ol a{display:flex;gap:10px;padding:6px 10px;border-radius:8px;color:var(--ink-2);font-size:.9rem;line-height:1.4;text-decoration:none}
+.side ol a:hover{background:var(--surface-2);color:var(--ink)}
+.side ol a[aria-current="page"]{background:var(--accent-soft);color:var(--ink);font-weight:600}
+.side-num{flex:none;min-width:1.7em;padding-top:.15em;color:var(--ink-2);font:600 .72rem/1.4 var(--f-mono)}
+
+/* on this page */
+.toc{position:sticky;top:var(--bar);align-self:start;max-height:calc(100vh - var(--bar));overflow-y:auto;padding:40px 20px 40px 4px;font-size:.85rem;scrollbar-width:thin}
+.toc-title{margin:0 0 10px;color:var(--ink-2);font:600 .72rem/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase}
+.toc ol,.toc-inline ol{margin:0;padding:0;list-style:none}
+.toc a,.toc-inline a{display:block;padding:4px 0 4px 12px;border-left:2px solid var(--line);color:var(--ink-2);line-height:1.4;text-decoration:none}
+.toc .toc-3 a,.toc-inline .toc-3 a{padding-left:24px}
+.toc a:hover,.toc-inline a:hover{color:var(--ink)}
+.toc a[aria-current="location"]{border-left-color:var(--accent);color:var(--ink);font-weight:600}
+.toc-inline{margin:0 0 28px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.toc-inline > summary{padding:10px 14px;font-weight:600;font-size:.92rem;cursor:pointer}
+.toc-inline > summary span{margin-left:6px;color:var(--ink-2);font-weight:400}
+.toc-inline > ol{padding:0 14px 12px;font-size:.9rem}
+
+@media (max-width:1199px){.layout{grid-template-columns:256px minmax(0,1fr)}.toc{display:none}}
+@media (min-width:1200px){.toc-inline{display:none}}
+@media (max-width:899px){
+  .layout{display:block}
+  .side{position:fixed;z-index:50;top:0;bottom:0;left:0;align-self:stretch;width:min(86vw,330px);height:auto;padding-top:10px;background:var(--surface);box-shadow:var(--shadow);transform:translateX(-104%);visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s}
+  .drawer-open .side{transform:none;visibility:visible;transition:transform .22s ease}
+  .drawer-open{overflow:hidden}
+  .side-close{display:inline-flex}
+  .scrim{position:fixed;inset:0;z-index:45;background:rgb(8 12 18 / .45)}
+}
+@media (min-width:900px){.menu,.scrim{display:none!important}}
+
+/* the note */
+.doc{min-height:60vh;line-height:1.72;overflow-wrap:break-word}
+.doc:focus{outline:none}
+.doc-eyebrow{margin:0 0 10px;color:var(--accent);font:600 .72rem/1.3 var(--f-mono);letter-spacing:.14em;text-transform:uppercase}
+.doc-meta{margin:-4px 0 24px;color:var(--ink-2);font-size:.9rem}
+.doc h1,.doc h2,.doc h3,.doc h4,.doc h5,.doc h6{margin:2em 0 .6em;font-family:var(--f-display);font-weight:700;line-height:1.25;letter-spacing:-.01em;text-wrap:balance}
+.doc h1{margin:0 0 .45em;font-size:clamp(2rem,5vw,2.75rem);line-height:1.08;letter-spacing:-.03em}
+.doc h2{padding-bottom:.35em;border-bottom:1px solid var(--line);font-size:1.5rem}
+.doc h3{font-size:1.2rem}
+.doc h4{font-size:1.04rem}
+.doc h5,.doc h6{color:var(--ink-2);font-size:.95rem}
+.doc p,.doc ul,.doc ol,.doc dl,.doc blockquote,.doc pre,.doc details,.doc .table-wrap{margin:0 0 1.1em}
+.doc ul,.doc ol{padding-left:1.6em}
+.doc li + li{margin-top:.3em}
+.doc li > ul,.doc li > ol{margin:.3em 0 0}
+.doc li > p{margin:.5em 0}
+.doc li::marker{color:var(--ink-3)}
+.doc li.task{list-style:none}
+.doc li.task input{margin:0 .5em 0 -1.35em;vertical-align:middle}
+.doc strong{font-weight:600}
+.doc a{text-underline-offset:3px;text-decoration-thickness:1px}
+.doc a:hover{text-decoration-thickness:2px}
+.doc code{padding:.12em .38em;border-radius:5px;background:var(--surface-2);font:500 .86em var(--f-mono)}
+.doc pre{overflow:auto;padding:14px 16px;border-radius:10px;background:var(--code-bg);color:var(--code-ink);font:400 .84rem/1.65 var(--f-mono);tab-size:4}
+.doc pre code{padding:0;background:none;color:inherit;font:inherit}
+.doc blockquote{padding:.15em 0 .15em 1em;border-left:3px solid var(--line);color:var(--ink-2)}
+.doc blockquote > :last-child{margin-bottom:0}
+.doc hr{height:0;margin:2.2em 0;border:0;border-top:1px solid var(--line)}
+.doc img{max-width:100%;height:auto;border-radius:8px}
+.doc .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.doc table{width:100%;border-collapse:collapse;font-size:.92rem;line-height:1.55}
+.doc th,.doc td{min-width:7em;padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.doc th{background:var(--surface-2);font-weight:600}
+.doc td + td,.doc th + th{border-left:1px solid var(--line)}
+.doc tbody tr:last-child td{border-bottom:0}
+.doc th[align="center"],.doc td[align="center"]{text-align:center}
+.doc th[align="right"],.doc td[align="right"]{text-align:right}
+.doc details > summary{font-weight:600;cursor:pointer}
+.doc .anchor{margin-left:.3em;padding:0 .2em;color:var(--ink-3);font-weight:500;text-decoration:none;opacity:0;transition:opacity .15s ease}
+.doc :is(h1,h2,h3,h4,h5,h6):hover .anchor,.doc .anchor:focus-visible{opacity:1}
+@media (hover:none){.doc .anchor{display:none}}
+.doc mark.hit{padding:0 1px;border-radius:3px;background:var(--hit);color:var(--hit-ink)}
+.doc mark.hit.current{outline:2px solid var(--accent);outline-offset:1px}
+
+/* GitHub's > [!NOTE] style callouts */
+.doc .alert{padding:.7em 1em;border-left:4px solid var(--alert);border-radius:0 10px 10px 0;background:color-mix(in srgb,var(--alert) 8%,var(--surface));color:var(--ink)}
+.doc .alert-title{margin:0 0 .3em;color:var(--alert);font-weight:600}
+.alert-note{--alert:var(--note)} .alert-tip{--alert:var(--tip)} .alert-important{--alert:var(--important)} .alert-warning{--alert:var(--warning)} .alert-caution{--alert:var(--caution)}
+
+/* code colours: highlight.js classes, in the visualizers' palette */
+.hljs-keyword,.hljs-literal,.hljs-selector-tag,.hljs-doctag,.hljs-section{color:var(--tk-kw)}
+.hljs-string,.hljs-regexp,.hljs-addition,.hljs-template-tag{color:var(--tk-str)}
+.hljs-number,.hljs-symbol,.hljs-bullet,.hljs-link{color:var(--tk-num)}
+.hljs-comment,.hljs-quote{color:var(--tk-com);font-style:italic}
+.hljs-title,.hljs-name,.hljs-built_in,.hljs-selector-id,.hljs-selector-class{color:var(--tk-fn)}
+.hljs-type,.hljs-title.class_,.hljs-attr,.hljs-attribute{color:var(--tk-type)}
+.hljs-meta,.hljs-meta .hljs-keyword{color:var(--tk-meta)}
+.hljs-deletion{color:var(--tk-kw)}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+
+/* previous / next in the same folder */
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:56px;padding-top:24px;border-top:1px solid var(--line)}
+.pager a{display:grid;align-content:start;gap:6px;min-width:0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);text-decoration:none;transition:border-color .15s ease,box-shadow .15s ease}
+.pager a:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));box-shadow:var(--shadow)}
+.pager .next{grid-column:2;text-align:right}
+.pager small{color:var(--ink-2);font:600 .7rem/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase}
+.pager b{font:700 1.02rem/1.3 var(--f-display);text-wrap:balance}
+.pager-hint{grid-column:1 / -1;margin:2px 0 0;color:var(--ink-2);font-size:.8rem;text-align:center}
+.pager-hint kbd{padding:1px 6px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;background:var(--surface);font:600 .72rem/1.4 var(--f-mono)}
+@media (hover:none){.pager-hint{display:none}}
+@media (max-width:560px){.pager{grid-template-columns:1fr}.pager .next{grid-column:auto}}
+
+/* matches for a search made on the homepage */
+.hits{position:fixed;bottom:max(16px,env(safe-area-inset-bottom));left:50%;z-index:40;display:flex;align-items:center;gap:2px;max-width:calc(100vw - 32px);padding:5px 5px 5px 16px;border:1px solid var(--line);border-radius:999px;background:var(--surface);box-shadow:var(--shadow);font-size:.88rem;transform:translateX(-50%)}
+.hits span{min-width:0;margin-right:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.hits button{display:grid;flex:none;place-items:center;width:34px;height:34px;border:0;border-radius:50%;background:none;color:var(--ink-2);cursor:pointer}
+.hits button:hover:not(:disabled){background:var(--surface-2);color:var(--ink)}
+.hits button:disabled{opacity:.4;cursor:default}
+
+/* loading, errors */
+.skeleton span{display:block;width:88%;height:13px;margin:0 0 14px;border-radius:6px;background:var(--surface-2);animation:pulse 1.1s ease-in-out infinite alternate}
+.skeleton span:nth-child(1){width:26%;height:12px}
+.skeleton span:nth-child(2){width:70%;height:42px;margin-bottom:30px}
+.skeleton span:nth-child(3n){width:94%}
+.skeleton span:nth-child(4n){width:62%}
+.doc.is-loading > :not(.skeleton){opacity:.45;transition:opacity .2s ease}
+@keyframes pulse{from{opacity:.45}to{opacity:1}}
+.doc-warn{padding:12px 14px;border:1px dashed var(--line);border-radius:10px;color:var(--ink-2)}
+.doc .doc-raw{border:1px solid var(--line);background:var(--surface);color:var(--ink);white-space:pre-wrap}
+.btn{height:38px;padding:0 16px;border:1px solid var(--accent);border-radius:9px;background:var(--accent);color:var(--accent-ink);font:600 .9rem var(--f-body);cursor:pointer}
+
+/* shown only if this file is opened without the GitHub Pages build */
+.note-unbuilt{display:none;max-width:680px;margin:48px auto;padding:18px 20px;border:1px dashed var(--line);border-radius:12px;color:var(--ink-2)}
+body:not([data-built="jekyll"]) .layout,body:not([data-built="jekyll"]) .bar > :not(.home){display:none}
+body:not([data-built="jekyll"]) .note-unbuilt{display:block}
+
+@media print{
+  .bar,.side,.toc,.toc-inline,.pager,.hits,.scrim,.skip,.doc .anchor{display:none!important}
+  .layout{display:block}
+  .main{padding:0}
+  body{background:#fff;color:#000}
+  .doc pre{border:1px solid #ccc;background:#f6f7f9;color:#111;white-space:pre-wrap}
+  .doc pre *{color:inherit!important}
+  .doc h2,.doc h3{break-after:avoid}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body data-built="{{ 'jekyll' }}" data-repo="{{ site.github.repository_url | escape }}">
+<a class="skip" href="#noteDoc">Skip to the note</a>
+<header class="bar">
+  <button type="button" class="icon-btn menu" id="noteMenu" aria-controls="noteSide" aria-expanded="false">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span class="sr-only">All notes</span>
+  </button>
+  <a class="home" href="./#notes">
+    <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M9.5 23v-6M16 23V9M22.5 23v-9.5" stroke="var(--accent-ink)" stroke-width="3.4" stroke-linecap="round"/></svg>
+    <span>Interview Notes</span>
+  </a>
+  <span class="crumb" id="noteCrumb"></span>
+  <a class="icon-btn source" id="noteSource" href="#" target="_blank" rel="noopener" hidden>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
+    <span>GitHub</span><b class="sr-only"> (view this note's Markdown source)</b>
+  </a>
+</header>
+
+<div class="layout">
+  <nav class="side" id="noteSide" aria-label="All notes">
+    <div class="side-head">
+      <a href="./#notes">All notes</a>
+      <button type="button" class="icon-btn side-close" id="noteSideClose">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        <span class="sr-only">Close the list of notes</span>
+      </button>
+    </div>
+  </nav>
+  <div class="scrim" id="noteScrim" hidden></div>
+
+  <main class="main" id="noteMain">
+    <article class="doc" id="noteDoc" tabindex="-1" aria-busy="true">
+      <div class="skeleton" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <noscript><p class="doc-warn">Notes are turned from Markdown into a page by JavaScript, which is turned off. The notes are also readable on GitHub.</p></noscript>
+    </article>
+    <nav class="pager" id="notePager" aria-label="Previous and next note" hidden></nav>
+  </main>
+
+  <aside class="toc" id="noteToc" aria-label="On this page" hidden></aside>
+</div>
+
+<div class="hits" id="noteHits" role="region" aria-label="Search matches" hidden>
+  <span id="noteHitsText" aria-live="polite"></span>
+  <button type="button" id="noteHitsPrev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg><span class="sr-only">Previous match</span></button>
+  <button type="button" id="noteHitsNext"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span class="sr-only">Next match</span></button>
+  <button type="button" id="noteHitsClose"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="sr-only">Clear the highlighted matches</span></button>
+</div>
+<p class="sr-only" id="noteLive" aria-live="polite"></p>
+
+<p class="note-unbuilt">The list of notes is generated when GitHub Pages builds this site, so notes only open on the published page. In the repo, go to Settings → Pages and deploy from the <code>main</code> branch.</p>
+
+<script type="application/json" id="note-paths">{% include note-paths.json %}</script>
+<script>
+/* Shows the note named in ?note=, keeps every note one click away in the sidebar, and switches
+   notes without reloading the page. index.html links here: it derives the same folder, number and
+   fallback title from a note's path, stores note titles under META_KEY and reads LAST_KEY. */
+(() => {
+  'use strict';
+  if (document.body.dataset.built !== 'jekyll') return; // opened without the GitHub Pages build
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const el = (tag, cls, text) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  };
+  const store = {
+    get(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } },
+    set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* storage unavailable */ } },
+  };
+  const ui = {
+    side: $('#noteSide'), menu: $('#noteMenu'), scrim: $('#noteScrim'), crumb: $('#noteCrumb'), source: $('#noteSource'),
+    main: $('#noteMain'), doc: $('#noteDoc'), pager: $('#notePager'), toc: $('#noteToc'), live: $('#noteLive'),
+    hits: $('#noteHits'), hitsText: $('#noteHitsText'), hitsPrev: $('#noteHitsPrev'), hitsNext: $('#noteHitsNext'),
+  };
+  const repo = document.body.dataset.repo || '';
+
+  /* ---- the notes, as index.html derives them ---- */
+
+  const META_KEY = 'interview-notes:notes-meta:v1'; // path -> { title, sections, words }, from index.html
+  const LAST_KEY = 'interview-notes:last-read:v1';  // folder -> key of the note last opened here
+  const pretty = s => s.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+  const encodePath = path => path.split('/').map(encodeURIComponent).join('/');
+  const readerUrl = note => 'notes.html?note=' + encodePath(note.key);
+
+  let paths = [];
+  try { paths = JSON.parse($('#note-paths').textContent); } catch (e) { /* treated as no notes */ }
+  const notes = paths.map(path => {
+    const slash = path.lastIndexOf('/');
+    const dir = path.slice(0, slash);
+    const base = path.slice(slash + 1).replace(/\.(md|markdown)$/i, '');
+    const m = /^(\d+)[ ._-]+(.+)$/.exec(base);
+    return { path, dir, key: dir + '/' + base, num: m ? m[1] : '', fallback: pretty(m ? m[2] : base) || base };
+  }).sort((a, b) => collator.compare(a.path, b.path));
+
+  const groups = [];
+  for (const note of notes) {
+    let group = groups.find(g => g.dir === note.dir);
+    if (!group) groups.push(group = { dir: note.dir, label: note.dir.split('/').map(pretty).join(' / '), notes: [] });
+    group.notes.push(note);
+    note.group = group;
+  }
+  groups.sort((a, b) => collator.compare(a.dir, b.dir));
+
+  const meta = store.get(META_KEY) || {};
+  const titleOf = note => note.title || (meta[note.path] && meta[note.path].title) || note.fallback;
+  const numbered = note => (note.num ? note.num + ' · ' : '') + titleOf(note);
+  const neighbour = (note, step) => note.group.notes[note.group.notes.indexOf(note) + step];
+  const byKey = new Map();
+  for (const note of notes) { byKey.set(note.key, note); byKey.set(note.path, note); }
+
+  const siteRoot = new URL('./', location.href);
+  const decode = s => { try { return decodeURIComponent(s); } catch (e) { return s; } };
+  const byPathname = new Map(notes.map(note => [decode(new URL(encodePath(note.path), siteRoot).pathname), note]));
+
+  /* ---- sidebar ---- */
+
+  for (const group of groups) {
+    const details = el('details', 'side-group');
+    const summary = el('summary');
+    summary.append(el('span', null, group.label), el('span', 'side-n', String(group.notes.length)));
+    const list = el('ol');
+    for (const note of group.notes) {
+      const a = el('a');
+      a.href = readerUrl(note);
+      if (note.num) a.append(el('span', 'side-num', note.num));
+      note.label = el('span', null, titleOf(note));
+      a.append(note.label);
+      note.link = a;
+      const li = el('li');
+      li.append(a);
+      list.append(li);
+    }
+    details.append(summary, list);
+    group.details = details;
+    ui.side.append(details);
+  }
+
+  function markCurrent(note) {
+    for (const n of notes) {
+      if (n === note) n.link.setAttribute('aria-current', 'page');
+      else n.link.removeAttribute('aria-current');
+    }
+    note.group.details.open = true;
+    const box = ui.side.getBoundingClientRect(), link = note.link.getBoundingClientRect();
+    if (link.top < box.top || link.bottom > box.bottom) ui.side.scrollTop += link.top - box.top - box.height / 3;
+  }
+
+  const narrow = matchMedia('(max-width: 899px)');
+  function drawer(open) {
+    open = open && narrow.matches;
+    if (open === document.body.classList.contains('drawer-open')) return;
+    document.body.classList.toggle('drawer-open', open);
+    ui.menu.setAttribute('aria-expanded', String(open));
+    ui.scrim.hidden = !open;
+    ui.main.inert = open;
+    if (open) ((current && current.link) || $('a', ui.side)).focus({ preventScroll: true });
+  }
+  ui.menu.addEventListener('click', () => drawer(!document.body.classList.contains('drawer-open')));
+  ui.scrim.addEventListener('click', () => drawer(false));
+  $('#noteSideClose').addEventListener('click', () => { drawer(false); ui.menu.focus(); });
+  narrow.addEventListener('change', () => drawer(false));
+
+  /* ---- loading a note ---- */
+
+  // The libraries load with `defer`, so they are ready by DOMContentLoaded (or missing if blocked).
+  const libsReady = new Promise(resolve => {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', resolve, { once: true });
+    else resolve();
+  });
+  let markdown = null;
+  function renderer() {
+    if (markdown === null) {
+      markdown = window.marked && window.DOMPurify ? new window.marked.Marked({ gfm: true, breaks: false }) : false;
+      if (window.hljs && !window.hljs.getLanguage('properties')) window.hljs.registerAliases(['properties'], { languageName: 'ini' });
+    }
+    return markdown;
+  }
+
+  const texts = new Map(); // path -> Promise of the Markdown, so going back or next is instant
+  function fetchText(note) {
+    if (!texts.has(note.path)) {
+      texts.set(note.path, fetch(encodePath(note.path), { cache: 'no-cache' }).then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.text();
+      }).catch(err => { texts.delete(note.path); throw err; }));
+    }
+    return texts.get(note.path);
+  }
+
+  let current = null;
+  let showing = 0;
+  // how: 'load' first page view, 'nav' a link or key press, 'side' a sidebar click, 'pop' back/forward
+  async function show(note, how = 'load') {
+    const seq = ++showing;
+    current = note;
+    markCurrent(note);
+    ui.crumb.textContent = note.group.label;
+    ui.source.hidden = !repo;
+    if (repo) ui.source.href = `${repo}/blob/HEAD/${encodePath(note.path)}`;
+    document.title = `${titleOf(note)} · Interview Notes`;
+    renderPager(note);
+    ui.doc.setAttribute('aria-busy', 'true');
+    const slow = setTimeout(() => ui.doc.classList.add('is-loading'), 200);
+    let md = null, failure = null;
+    try { md = await fetchText(note); } catch (err) { failure = err; }
+    await libsReady;
+    clearTimeout(slow);
+    if (seq !== showing) return; // another note was opened meanwhile
+    ui.doc.classList.remove('is-loading');
+    ui.doc.removeAttribute('aria-busy');
+    if (failure) { renderError(note, failure); return; }
+
+    render(note, md);
+    const q = new URLSearchParams(location.search).get('q') || '';
+    setHits(q ? highlightTerms(ui.doc, q) : [], q);
+    placeScroll(how);
+    if (how !== 'load') ui.live.textContent = `Opened ${titleOf(note)}`;
+    if (how === 'nav') $('h1', ui.doc).focus({ preventScroll: true });
+
+    const last = store.get(LAST_KEY) || {};
+    last[note.dir] = note.key;
+    store.set(LAST_KEY, last);
+    const next = neighbour(note, 1);
+    if (next) setTimeout(() => fetchText(next).catch(() => {}), 1200);
+  }
+
+  function placeScroll(how) {
+    const saved = history.state && history.state.y;
+    const target = location.hash && document.getElementById(decode(location.hash.slice(1)));
+    if (typeof saved === 'number' && how !== 'nav' && how !== 'side') scrollTo({ top: saved, behavior: 'instant' });
+    else if (target) target.scrollIntoView({ behavior: 'instant' });
+    else if (hits.length) goToHit(0, 'instant');
+    else scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  /* ---- rendering ---- */
+
+  function render(note, md) {
+    const doc = ui.doc;
+    const parser = renderer();
+    if (!parser) {
+      doc.replaceChildren(el('h1', null, titleOf(note)),
+        el('p', 'doc-warn', "The Markdown renderer didn't load, so this is the note's plain text."),
+        el('pre', 'doc-raw', md));
+      buildToc([]);
+      return;
+    }
+    doc.innerHTML = window.DOMPurify.sanitize(parser.parse(md), { USE_PROFILES: { html: true } });
+    // The homepage's count when it has one, so a note shows the same reading time in both places.
+    const words = (meta[note.path] && meta[note.path].words) || (doc.textContent.match(/\S+/g) || []).length;
+
+    let h1 = $('h1', doc);
+    if (!h1) { h1 = el('h1', null, note.fallback); doc.prepend(h1); }
+    h1.tabIndex = -1;
+    note.title = h1.textContent.trim() || note.fallback;
+    note.label.textContent = note.title;
+    document.title = `${note.title} · Interview Notes`;
+
+    const headings = anchorHeadings(doc);
+    fixLinks(doc, note);
+    for (const table of doc.querySelectorAll('table')) {
+      const wrap = el('div', 'table-wrap');
+      table.before(wrap);
+      wrap.append(table);
+    }
+    for (const box of doc.querySelectorAll('li > input[type="checkbox"]:first-child, li > p:first-child > input[type="checkbox"]:first-child')) {
+      box.closest('li').classList.add('task');
+    }
+    callouts(doc);
+    highlightCode(doc);
+
+    const index = note.group.notes.indexOf(note) + 1;
+    const intro = el('p', 'doc-meta', `Note ${index} of ${note.group.notes.length} · ${Math.max(1, Math.round(words / 220))} min read`);
+    h1.before(el('p', 'doc-eyebrow', note.group.label));
+    h1.after(intro);
+    buildToc(headings.filter(h => h.level === 2 || h.level === 3), intro);
+  }
+
+  // Heading ids follow GitHub's (github-slugger), so links to a #section work the same as on GitHub.
+  function anchorHeadings(doc) {
+    const seen = Object.create(null);
+    const out = [];
+    for (const h of doc.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+      const text = h.textContent.trim();
+      if (!h.id) {
+        const base = text.toLowerCase().replace(/[^\p{L}\p{M}\p{N}\p{Pc} -]/gu, '').replace(/ /g, '-') || 'section';
+        let id = base;
+        while (id in seen) id = base + '-' + (++seen[base]);
+        seen[id] = 0;
+        h.id = id;
+      }
+      const a = el('a', 'anchor', '#');
+      a.href = '#' + h.id;
+      a.setAttribute('aria-label', `Link to this section: ${text}`);
+      h.append(a);
+      out.push({ el: h, id: h.id, text, level: Number(h.tagName[1]) });
+    }
+    return out;
+  }
+
+  // Relative links resolve against the note's own folder, as on GitHub. Links to another note open
+  // it here; links to Markdown kept off the site (the top-level plans) open on GitHub instead.
+  function fixLinks(doc, note) {
+    const base = new URL(encodePath(note.path), siteRoot);
+    const rootPath = decode(siteRoot.pathname);
+    const newTab = a => { a.target = '_blank'; a.rel = 'noopener'; };
+    for (const a of doc.querySelectorAll('a[href]')) {
+      const href = a.getAttribute('href');
+      if (href.startsWith('#')) continue;
+      let url;
+      try { url = new URL(href, base); } catch (e) { continue; }
+      if (url.origin !== location.origin) {
+        if (url.protocol === 'http:' || url.protocol === 'https:') newTab(a);
+        continue;
+      }
+      const pathname = decode(url.pathname);
+      const target = byPathname.get(pathname);
+      if (target) {
+        a.href = readerUrl(target) + url.hash;
+      } else if (repo && /\.(md|markdown)$/i.test(pathname) && pathname.startsWith(rootPath)) {
+        a.href = `${repo}/blob/HEAD/${encodePath(pathname.slice(rootPath.length))}${url.hash}`;
+        newTab(a);
+      } else {
+        a.href = url.href;
+      }
+    }
+    for (const img of doc.querySelectorAll('img[src]')) {
+      try { img.src = new URL(img.getAttribute('src'), base).href; } catch (e) { /* leave it as written */ }
+      img.loading = 'lazy';
+    }
+  }
+
+  const CALLOUTS = { note: 'Note', tip: 'Tip', important: 'Important', warning: 'Warning', caution: 'Caution' };
+  function callouts(doc) {
+    for (const quote of doc.querySelectorAll('blockquote')) {
+      const p = quote.firstElementChild;
+      const first = p && p.tagName === 'P' ? p.firstChild : null;
+      const m = first && first.nodeType === Node.TEXT_NODE && /^\[!(note|tip|important|warning|caution)\][ \t]*(?:\n|$)/i.exec(first.nodeValue);
+      if (!m) continue;
+      first.nodeValue = first.nodeValue.slice(m[0].length);
+      if (!p.textContent.trim() && !p.querySelector('img')) p.remove();
+      const kind = m[1].toLowerCase();
+      quote.classList.add('alert', 'alert-' + kind);
+      quote.prepend(el('p', 'alert-title', CALLOUTS[kind]));
+    }
+  }
+
+  // Only blocks that name their language, as on GitHub; highlight.js escapes what it returns.
+  function highlightCode(doc) {
+    const hljs = window.hljs;
+    if (!hljs) return;
+    for (const code of doc.querySelectorAll('pre > code[class*="language-"]')) {
+      const lang = (/\blanguage-([\w#+.-]+)/.exec(code.className) || [])[1];
+      if (!lang || !hljs.getLanguage(lang)) continue;
+      code.innerHTML = hljs.highlight(code.textContent, { language: lang, ignoreIllegals: true }).value;
+      code.classList.add('hljs');
+    }
+  }
+
+  function renderPager(note) {
+    const link = (target, cls, label) => {
+      const a = el('a', cls);
+      a.href = readerUrl(target);
+      a.append(el('small', null, label), el('b', null, numbered(target)));
+      return a;
+    };
+    const prev = neighbour(note, -1), next = neighbour(note, 1);
+    ui.pager.replaceChildren(...[prev && link(prev, 'prev', '← Previous'), next && link(next, 'next', 'Next →')].filter(Boolean));
+    if (prev || next) {
+      const hint = el('p', 'pager-hint');
+      hint.append(el('kbd', null, '←'), ' ', el('kbd', null, '→'), ' also switch notes');
+      ui.pager.append(hint);
+    }
+    ui.pager.hidden = !prev && !next;
+  }
+
+  function renderError(note, err) {
+    const retry = el('button', 'btn', 'Try again');
+    retry.type = 'button';
+    retry.addEventListener('click', () => show(note, 'nav'));
+    const p = el('p', 'doc-warn', `This note didn't load (${err.message}). `);
+    if (repo) {
+      const a = el('a', null, 'Read it on GitHub');
+      a.href = `${repo}/blob/HEAD/${encodePath(note.path)}`;
+      p.append(a, ' instead, or try again.');
+    }
+    const h1 = el('h1', null, titleOf(note));
+    h1.tabIndex = -1;
+    ui.doc.replaceChildren(el('p', 'doc-eyebrow', note.group.label), h1, p, retry);
+    buildToc([]);
+    setHits([], '');
+  }
+
+  function renderMissing(key) {
+    document.title = 'Note not found · Interview Notes';
+    ui.doc.removeAttribute('aria-busy');
+    const p = el('p');
+    if (notes.length) {
+      p.append(`There's no note at “${key}”; it may have been renamed or moved. Pick one from the list, or see `);
+      const a = el('a', null, 'all notes');
+      a.href = './#notes';
+      p.append(a, '.');
+    } else {
+      p.textContent = 'There are no notes yet. Add a Markdown file inside a folder, such as Java_SpringBoot/, and it shows up after the next GitHub Pages build.';
+    }
+    ui.doc.replaceChildren(el('h1', null, notes.length ? 'Note not found' : 'No notes yet'), p);
+    for (const group of groups) group.details.open = true;
+  }
+
+  /* ---- on this page ---- */
+
+  let spyLinks = [];
+  function buildToc(items, after) {
+    const list = () => {
+      const ol = el('ol');
+      for (const h of items) {
+        const a = el('a', null, h.text);
+        a.href = '#' + h.id;
+        const li = el('li', 'toc-' + h.level);
+        li.append(a);
+        ol.append(li);
+      }
+      return ol;
+    };
+    spyLinks = [];
+    ui.toc.replaceChildren();
+    ui.toc.hidden = items.length < 2;
+    if (items.length < 2) return;
+    const rail = list();
+    ui.toc.append(el('p', 'toc-title', 'On this page'), rail);
+    spyLinks = [...rail.querySelectorAll('a')].map((a, i) => ({ a, h: items[i].el }));
+    const inline = el('details', 'toc-inline');
+    const summary = el('summary', null, 'On this page');
+    summary.append(el('span', null, `${items.length} sections`));
+    inline.append(summary, list());
+    after.after(inline);
+    spy();
+  }
+
+  let spyQueued = false;
+  function spy() {
+    spyQueued = false;
+    if (!spyLinks.length) return;
+    let active = null;
+    for (const link of spyLinks) {
+      if (link.h.getBoundingClientRect().top < 90) active = link;
+      else break;
+    }
+    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) active = spyLinks[spyLinks.length - 1];
+    for (const link of spyLinks) {
+      if (link === active) link.a.setAttribute('aria-current', 'location');
+      else link.a.removeAttribute('aria-current');
+    }
+  }
+  addEventListener('scroll', () => {
+    if (!spyQueued) { spyQueued = true; requestAnimationFrame(spy); }
+  }, { passive: true });
+
+  /* ---- matches for ?q=, the homepage search that led here ---- */
+
+  let hits = [];
+  let hitAt = -1;
+  let hitsQuery = '';
+  function highlightTerms(root, q) {
+    const terms = [...new Set(q.toLowerCase().split(/\s+/).filter(Boolean))].sort((a, b) => b.length - a.length);
+    if (!terms.length) return [];
+    const re = new RegExp(terms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'giu');
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: node => node.parentElement.closest('.anchor, .toc-inline, .doc-eyebrow, .doc-meta')
+        ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    const marks = [];
+    for (const node of nodes) {
+      const text = node.nodeValue;
+      const parts = [];
+      let last = 0;
+      for (const m of text.matchAll(re)) {
+        if (!m[0]) continue;
+        const mark = el('mark', 'hit', m[0]);
+        parts.push(text.slice(last, m.index), mark);
+        marks.push(mark);
+        last = m.index + m[0].length;
+      }
+      if (parts.length) { parts.push(text.slice(last)); node.replaceWith(...parts); }
+    }
+    return marks;
+  }
+
+  function setHits(marks, q) {
+    hits = marks;
+    hitAt = -1;
+    hitsQuery = q;
+    ui.hits.hidden = !q;
+    ui.hitsPrev.disabled = ui.hitsNext.disabled = marks.length < 2;
+    ui.hitsText.textContent = marks.length ? `${marks.length} ${marks.length === 1 ? 'match' : 'matches'} for “${q}”` : `No matches for “${q}”`;
+  }
+
+  function goToHit(i, behavior = 'auto') { // 'auto': smooth per the CSS, unless reduced motion is on
+    if (!hits.length) return;
+    hitAt = (i + hits.length) % hits.length;
+    hits.forEach((mark, j) => mark.classList.toggle('current', j === hitAt));
+    const mark = hits[hitAt];
+    const closed = mark.closest('details:not([open])');
+    if (closed) closed.open = true;
+    mark.scrollIntoView({ block: 'center', behavior });
+    ui.hitsText.textContent = `${hitAt + 1} of ${hits.length} for “${hitsQuery}”`;
+  }
+
+  function clearHits() {
+    for (const mark of hits) mark.replaceWith(mark.textContent);
+    ui.doc.normalize();
+    setHits([], '');
+    if (current) history.replaceState(history.state, '', readerUrl(current) + location.hash);
+  }
+  ui.hitsPrev.addEventListener('click', () => goToHit(hitAt - 1));
+  ui.hitsNext.addEventListener('click', () => goToHit(hitAt + 1));
+  $('#noteHitsClose').addEventListener('click', clearHits);
+
+  /* ---- switching notes without a reload ---- */
+
+  const samePage = url => url.origin === location.origin
+    && url.pathname.replace(/\.html$/, '') === location.pathname.replace(/\.html$/, '');
+
+  function go(note, url = new URL(readerUrl(note), location.href), how = 'nav') {
+    history.replaceState({ ...history.state, y: Math.round(scrollY) }, '');
+    history.pushState(null, '', url);
+    show(note, how);
+  }
+
+  document.addEventListener('click', e => {
+    const a = e.target instanceof Element ? e.target.closest('a[href]') : null;
+    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target) return;
+    const url = new URL(a.href);
+    const note = samePage(url) && byKey.get(url.searchParams.get('note') || '');
+    if (!note || (note === current && url.search === location.search)) return; // other pages, and #sections
+    e.preventDefault();
+    const fromSide = ui.side.contains(a);
+    drawer(false);
+    go(note, url, fromSide && !narrow.matches ? 'side' : 'nav');
+  });
+
+  addEventListener('popstate', () => {
+    const note = byKey.get(new URLSearchParams(location.search).get('note') || '');
+    if (note && note !== current) show(note, 'pop');
+  });
+  addEventListener('pagehide', () => history.replaceState({ ...history.state, y: Math.round(scrollY) }, ''));
+
+  // ← and → switch notes, except where they are needed: in form fields, and over a code block or
+  // table that scrolls sideways (the last one clicked, even though clicking doesn't focus it).
+  let pointer = null;
+  document.addEventListener('pointerdown', e => { pointer = e.target; }, true);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (document.body.classList.contains('drawer-open')) { drawer(false); ui.menu.focus(); }
+      else if (!ui.hits.hidden) clearHits();
+      return;
+    }
+    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    if (!current || document.body.classList.contains('drawer-open')) return;
+    const focused = e.target instanceof Element && e.target !== document.body ? e.target : null;
+    if (focused && focused.closest('input, select, textarea, [contenteditable]')) return;
+    const origin = focused || (pointer instanceof Element ? pointer : null);
+    const box = origin && origin.closest('pre, .table-wrap');
+    if (box && box.scrollWidth > box.clientWidth) return;
+    const to = neighbour(current, e.key === 'ArrowLeft' ? -1 : 1);
+    if (!to) return;
+    e.preventDefault();
+    drawer(false);
+    go(to);
+  });
+
+  /* ---- start ---- */
+
+  const requested = new URLSearchParams(location.search).get('note');
+  const first = requested && byKey.get(requested);
+  if (first) show(first);
+  else if (!requested && notes.length) location.replace('./#notes');
+  else renderMissing(requested || '');
+})();
+</script>
+</body>
+</html>
