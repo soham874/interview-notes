@@ -70,23 +70,31 @@ trade           (trade_id, league_id, from_team, to_team, give, get,
 
 ## Architecture
 
-```text
- Apps ──→ API gateway ──┬─→ League service: leagues, rosters, lineups,
-                        │   trades, waivers — sharded by leagueId
-                        ├─→ Draft service: one room per draft, one owner,
-                        │   WebSocket gateways in front
-                        └─→ Scoreboard API: totals on read, cached per league
+```mermaid
+flowchart TD
+  accTitle: Fantasy sports architecture
+  accDescr: Apps call an API gateway in front of the league service (leagues, rosters, lineups, trades and waivers, sharded by leagueId), the draft service (one room per draft with one owner, behind WebSocket gateways) and the scoreboard API, which totals scores on read and caches them per league. Separately, the stats feed goes through stats ingest into the Kafka topic stats, keyed by gameId; the points calculator scores each player once per scoring template into the Kafka topic player-points, which updates the scoreboard cache and feeds a notifier that pushes alerts through per-player topics to APNs and FCM.
 
- Stats feed ──→ Stats ingest ──→ Kafka "stats" (by gameId)
-                                   │
-                                   ↓
-                Points calculator: per (player, scoring template)
-                                   │
-                                   ↓
-                Kafka "player-points" ──→ scoreboard cache
-                                   │
-                                   ↓
-                Notifier: per-player topics ──→ push (APNs/FCM)
+  apps(["Apps"])
+  gateway["API gateway"]
+  league["League service<br>leagues, rosters,<br>lineups, trades,<br>waivers — sharded<br>by leagueId"]
+  draft["Draft service<br>one room per draft,<br>one owner,<br>WebSocket gateways<br>in front"]
+  scoreboard["Scoreboard API<br>totals on read,<br>cached per league"]
+
+  feed(["Stats feed"])
+  ingest["Stats ingest"]
+  stats[/"Kafka “stats”<br>(by gameId)"/]
+  points["Points calculator<br>per (player,<br>scoring template)"]
+  playerPoints[/"Kafka “player-points”"/]
+  cache[("Scoreboard cache")]
+  notifier["Notifier<br>per-player topics"]
+  push(["Push (APNs/FCM)"])
+
+  apps --> gateway --> league & draft & scoreboard
+  feed --> ingest --> stats --> points --> playerPoints
+  playerPoints --> cache & notifier
+  notifier --> push
+  scoreboard -. "reads" .-> cache
 ```
 
 ## Deep dives

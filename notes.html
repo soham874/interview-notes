@@ -20,7 +20,9 @@
   as-is (see _config.yml). The Jekyll build lists them in note-paths at the bottom of this page; the
   script then shows the note named in ?note=, turning its Markdown into HTML with marked, cleaning
   that with DOMPurify and colouring code with highlight.js. The libraries are pinned, and the
-  integrity hashes make the browser refuse any other file served under those URLs.
+  integrity hashes make the browser refuse any other file served under those URLs. Mermaid, which
+  draws the ```mermaid blocks as diagrams, is pinned the same way in the script below; it is large,
+  so it loads only for a note that has a diagram.
 -->
 <script defer src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js" integrity="sha384-2vpGtuKqJvFlwJqYnf/wUMuzUfhUnYBt9oay0e2yaFcq0Dh6/aEbQ8YAOeKGzlYo" crossorigin="anonymous"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js" integrity="sha384-a7SzOxErzJ3ZpQz0zJ32d67dSitNzPcbfybc/ykU9KJhMgZkwqfSxlhhdJRS+XGL" crossorigin="anonymous"></script>
@@ -135,7 +137,7 @@ a{color:var(--accent)}
 .doc h3{font-size:1.2rem}
 .doc h4{font-size:1.04rem}
 .doc h5,.doc h6{color:var(--ink-2);font-size:.95rem}
-.doc p,.doc ul,.doc ol,.doc dl,.doc blockquote,.doc pre,.doc details,.doc .table-wrap{margin:0 0 1.1em}
+.doc p,.doc ul,.doc ol,.doc dl,.doc blockquote,.doc pre,.doc details,.doc .table-wrap,.doc .diagram{margin:0 0 1.1em}
 .doc ul,.doc ol{padding-left:1.6em}
 .doc li + li{margin-top:.3em}
 .doc li > ul,.doc li > ol{margin:.3em 0 0}
@@ -167,6 +169,12 @@ a{color:var(--accent)}
 @media (hover:none){.doc .anchor{display:none}}
 .doc mark.hit{padding:0 1px;border-radius:3px;background:var(--hit);color:var(--hit-ink)}
 .doc mark.hit.current{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ```mermaid diagrams, drawn in the page's colours; one too wide to read when shrunk scrolls sideways */
+.doc .diagram.is-drawn{overflow-x:auto;padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.doc .diagram svg{display:block;height:auto;margin:0 auto}
+.doc .diagram > :last-child{margin-bottom:0}
+.doc .diagram-warn{margin:0 0 .5em;color:var(--ink-2);font-size:.88rem}
 
 /* GitHub's > [!NOTE] style callouts */
 .doc .alert{padding:.7em 1em;border-left:4px solid var(--alert);border-radius:0 10px 10px 0;background:color-mix(in srgb,var(--alert) 8%,var(--surface));color:var(--ink)}
@@ -229,6 +237,7 @@ body:not([data-built="jekyll"]) .note-unbuilt{display:block}
   .doc pre{border:1px solid #ccc;background:#f6f7f9;color:#111;white-space:pre-wrap}
   .doc pre *{color:inherit!important}
   .doc h2,.doc h3{break-after:avoid}
+  .doc .diagram{break-inside:avoid}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
 </style>
@@ -441,14 +450,16 @@ body:not([data-built="jekyll"]) .note-unbuilt{display:block}
     const slow = setTimeout(() => ui.doc.classList.add('is-loading'), 200);
     let md = null, failure = null;
     try { md = await fetchText(note); } catch (err) { failure = err; }
-    await libsReady;
+    await Promise.all([libsReady, md && hasDiagram(md) && loadMermaid()]); // so a note shows up with its diagrams
     clearTimeout(slow);
     if (seq !== showing) return; // another note was opened meanwhile
     ui.doc.classList.remove('is-loading');
-    ui.doc.removeAttribute('aria-busy');
-    if (failure) { renderError(note, failure); return; }
+    if (failure) { ui.doc.removeAttribute('aria-busy'); renderError(note, failure); return; }
 
     render(note, md);
+    await drawDiagrams(ui.doc);
+    if (seq !== showing) return;
+    ui.doc.removeAttribute('aria-busy');
     const q = new URLSearchParams(location.search).get('q') || '';
     setHits(q ? highlightTerms(ui.doc, q) : [], q);
     placeScroll(how);
@@ -459,7 +470,7 @@ body:not([data-built="jekyll"]) .note-unbuilt{display:block}
     last[note.dir] = note.key;
     store.set(LAST_KEY, last);
     const next = neighbour(note, 1);
-    if (next) setTimeout(() => fetchText(next).catch(() => {}), 1200);
+    if (next) setTimeout(() => fetchText(next).then(text => { if (hasDiagram(text)) loadMermaid(); }).catch(() => {}), 1200);
   }
 
   function placeScroll(how) {
@@ -484,6 +495,7 @@ body:not([data-built="jekyll"]) .note-unbuilt{display:block}
       return;
     }
     doc.innerHTML = window.DOMPurify.sanitize(parser.parse(md), { USE_PROFILES: { html: true } });
+    diagrams(doc); // before the word count, which shouldn't count Mermaid's syntax
     // The homepage's count when it has one, so a note shows the same reading time in both places.
     const words = (meta[note.path] && meta[note.path].words) || (doc.textContent.match(/\S+/g) || []).length;
 
@@ -595,6 +607,111 @@ body:not([data-built="jekyll"]) .note-unbuilt{display:block}
     }
   }
 
+  /* ---- diagrams: ```mermaid blocks ---- */
+
+  // Mermaid is about 1 MB, so it loads only for a note that has a diagram, pinned and checked like the
+  // libraries in <head>.
+  const MERMAID_URL = 'https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.min.js';
+  const MERMAID_SRI = 'sha384-EOXBFmc3gx5mb+vn0vPvvGqACToJD24hhacX5Yx+8NUUQrHIle/Qi5Bg9o3zKwW2';
+  const hasDiagram = md => /^ {0,3}(?:`{3,}|~{3,})[ \t]*mermaid\b/im.test(md);
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+  let mermaidLib = null; // Promise of window.mermaid, or of null if it didn't load
+  function loadMermaid() {
+    if (!mermaidLib) {
+      mermaidLib = new Promise(resolve => {
+        const script = document.createElement('script');
+        script.src = MERMAID_URL;
+        script.integrity = MERMAID_SRI;
+        script.crossOrigin = 'anonymous';
+        script.onload = () => resolve(window.mermaid || null);
+        script.onerror = () => { script.remove(); mermaidLib = null; resolve(null); }; // the next note tries again
+        document.head.append(script);
+      });
+    }
+    return mermaidLib;
+  }
+
+  // Each block becomes an empty figure, which drawDiagrams() fills in once the note is on the page.
+  const sources = new WeakMap(); // figure -> its Mermaid source
+  function diagrams(doc) {
+    for (const code of doc.querySelectorAll('pre > code.language-mermaid')) {
+      const figure = el('figure', 'diagram');
+      sources.set(figure, code.textContent);
+      code.parentElement.replaceWith(figure);
+    }
+  }
+
+  // Diagrams use the page's colours, read from its CSS variables, and are drawn again when the page
+  // switches between light and dark.
+  const darkScheme = matchMedia('(prefers-color-scheme: dark)');
+  function diagramConfig() {
+    const css = getComputedStyle(document.documentElement);
+    const v = name => css.getPropertyValue(name).trim();
+    const theme = document.documentElement.dataset.theme; // decides light or dark as the :root rules do
+    const fontFamily = v('--f-body');
+    return {
+      startOnLoad: false,
+      securityLevel: 'strict',      // labels are sanitised (no scripts) and click handlers are off
+      suppressErrorRendering: true, // a diagram with a mistake throws, and its source is shown instead
+      theme: 'base',
+      fontFamily,
+      themeVariables: {
+        darkMode: theme === 'dark' || (theme !== 'light' && darkScheme.matches),
+        fontFamily, fontSize: '15px',
+        background: v('--surface'), textColor: v('--ink'), lineColor: v('--ink-3'),
+        primaryColor: v('--accent-soft'), primaryBorderColor: v('--accent'), primaryTextColor: v('--ink'),
+        secondaryColor: v('--surface-2'), tertiaryColor: v('--bg'),
+        clusterBkg: v('--bg'), clusterBorder: v('--line'), titleColor: v('--ink-2'),
+        edgeLabelBackground: v('--surface'),
+      },
+    };
+  }
+
+  let drawing = 0; // each drawDiagrams() takes a number, so an older one still running stops
+  let drawn = 0;   // for unique ids: Mermaid scopes a diagram's styles and arrowheads to its id
+  async function drawDiagrams(doc) {
+    const figures = [...doc.querySelectorAll('figure.diagram')];
+    if (!figures.length) return;
+    const run = ++drawing;
+    const mermaid = await loadMermaid();
+    if (run !== drawing) return;
+    if (!mermaid) {
+      for (const figure of figures) showSource(figure, "The diagram library didn't load, so this is the diagram's source.");
+      return;
+    }
+    const config = diagramConfig();
+    mermaid.initialize(config);
+    // Mermaid sizes each box to fit its text, so the font the text is shown in has to be loaded first.
+    const text = figures.map(figure => sources.get(figure)).join('\n');
+    await Promise.race([document.fonts.load(`${config.themeVariables.fontSize} ${config.fontFamily}`, text), wait(3000)]).catch(() => {});
+    for (const figure of figures) {
+      if (run !== drawing) return;
+      try {
+        // Drawn inside the figure, so the text is measured with the same styles it's shown with.
+        const { svg } = await mermaid.render(`diagram-${++drawn}`, sources.get(figure), figure);
+        if (run !== drawing) return;
+        figure.innerHTML = svg; // built and sanitised by Mermaid (securityLevel 'strict')
+        const image = figure.querySelector('svg');
+        const width = image && image.viewBox.baseVal ? image.viewBox.baseVal.width : 0;
+        if (width) image.style.minWidth = `${Math.round(width * 0.7)}px`; // shrunk more, its text is too small: scroll
+        figure.classList.add('is-drawn');
+      } catch (err) {
+        if (run !== drawing) return;
+        const why = String((err && err.message) || err).split('\n')[0].replace(/:$/, '');
+        showSource(figure, `This diagram didn't draw (${why}), so this is its source.`);
+      }
+    }
+  }
+
+  function showSource(figure, message) {
+    const pre = el('pre');
+    pre.append(el('code', 'language-mermaid', sources.get(figure)));
+    figure.classList.remove('is-drawn');
+    figure.replaceChildren(el('p', 'diagram-warn', message), pre);
+  }
+
+  darkScheme.addEventListener('change', () => drawDiagrams(ui.doc));
+
   function renderPager(note) {
     const link = (target, cls, label) => {
       const a = el('a', cls);
@@ -704,7 +821,7 @@ body:not([data-built="jekyll"]) .note-unbuilt{display:block}
     if (!terms.length) return [];
     const re = new RegExp(terms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'giu');
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-      acceptNode: node => node.parentElement.closest('.anchor, .toc-inline, .doc-eyebrow, .doc-meta')
+      acceptNode: node => node.parentElement.closest('.anchor, .toc-inline, .doc-eyebrow, .doc-meta, .diagram')
         ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
     });
     const nodes = [];
@@ -785,8 +902,9 @@ body:not([data-built="jekyll"]) .note-unbuilt{display:block}
   });
   addEventListener('pagehide', () => history.replaceState({ ...history.state, y: Math.round(scrollY) }, ''));
 
-  // ← and → switch notes, except where they are needed: in form fields, and over a code block or
-  // table that scrolls sideways (the last one clicked, even though clicking doesn't focus it).
+  // ← and → switch notes, except where they are needed: in form fields, and over a code block,
+  // table or diagram that scrolls sideways (the last one clicked: clicking one focuses the note around
+  // it, which has tabindex -1, so the element clicked counts until focus moves elsewhere).
   let pointer = null;
   document.addEventListener('pointerdown', e => { pointer = e.target; }, true);
   document.addEventListener('keydown', e => {
@@ -799,9 +917,16 @@ body:not([data-built="jekyll"]) .note-unbuilt{display:block}
     if (!current || document.body.classList.contains('drawer-open')) return;
     const focused = e.target instanceof Element && e.target !== document.body ? e.target : null;
     if (focused && focused.closest('input, select, textarea, [contenteditable]')) return;
-    const origin = focused || (pointer instanceof Element ? pointer : null);
-    const box = origin && origin.closest('pre, .table-wrap');
-    if (box && box.scrollWidth > box.clientWidth) return;
+    const clicked = pointer instanceof Element ? pointer : null;
+    const origin = clicked && (!focused || focused.contains(clicked)) ? clicked : focused;
+    const box = origin && origin.closest('pre, .table-wrap, .diagram');
+    if (box && box.scrollWidth > box.clientWidth) {
+      if (!focused || !box.contains(focused)) { // the browser would scroll the focused note, not the box
+        e.preventDefault();
+        box.scrollBy({ left: e.key === 'ArrowLeft' ? -40 : 40 });
+      }
+      return;
+    }
     const to = neighbour(current, e.key === 'ArrowLeft' ? -1 : 1);
     if (!to) return;
     e.preventDefault();

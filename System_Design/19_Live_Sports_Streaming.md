@@ -63,36 +63,50 @@ WS  /v1/live/{eventId}/data            scores, stats, odds — each timestamped
 
 **From the venue to the CDN**
 
-```text
- Venue: cameras → production truck (switching, graphics, commentary)
-   │  contribution: fiber or satellite; SRT or Zixi over the internet
-   ↓
- Broadcast center: SCTE-35 ad markers, captions, alternate audio
-   │  two independent feeds
-   ↓
- Live encoders A + B   (separate zones, same settings, frame-aligned)
-   │
-   ↓
- Packagers A + B: CMAF segments + low-latency parts, HLS/DASH, DRM
-   │
-   ↓
- Origins A + B: live edge + DVR window ──→ shields ──→ CDN edges
-   │
-   ↓
- Event ends ──→ full replay and highlights become VOD (notes 17, 33)
+```mermaid
+flowchart TD
+  accTitle: Live video from the venue to the CDN
+  accDescr: At the venue, cameras feed a production truck for switching, graphics and commentary. The contribution feed travels by fiber or satellite, or over the internet with SRT or Zixi, to the broadcast center, which adds SCTE-35 ad markers, captions and alternate audio and sends two independent feeds to live encoders A and B, in separate zones with the same settings and frame-aligned. Packagers A and B produce CMAF segments and low-latency parts for HLS and DASH with DRM, and origins A and B hold the live edge and the DVR window, feeding shields and then CDN edges. When the event ends, the full replay and highlights become on-demand titles.
+
+  venue(["Venue: cameras →<br>production truck<br>(switching, graphics,<br>commentary)"])
+  center["Broadcast center<br>SCTE-35 ad markers,<br>captions, alternate audio"]
+  encoders["Live encoders A + B<br>separate zones, same<br>settings, frame-aligned"]
+  packagers["Packagers A + B<br>CMAF segments +<br>low-latency parts,<br>HLS/DASH, DRM"]
+  origins[("Origins A + B<br>live edge + DVR window")]
+  shields["Shields"]
+  cdnEdges["CDN edges"]
+  vod["Full replay and highlights<br>become VOD (notes 17, 33)"]
+
+  venue -- "contribution: fiber<br>or satellite; SRT or<br>Zixi over the internet" --> center
+  center -- "two independent feeds" --> encoders --> packagers --> origins
+  origins --> shields --> cdnEdges
+  origins -- "event ends" --> vod
 ```
 
 **From the CDN to the viewer**
 
-```text
- Player ──1──→ Playback API ─┬─→ Entitlement: plan, TV provider, stream limit
-   ↑                         ├─→ Rights: region, blackout (note 32)
-   │                         └─→ CDN selector
-   │←── manifest URL (per-viewer ad breaks), license URL
-   │
-   ├──2──→ CDN edge ──→ shield ──→ origin A (or B)   playlist + parts
-   ├──3──→ License service: keys, next key announced early
-   └──4──→ Heartbeats + QoE ──→ Kafka ──→ leases, steering, who's watching
+```mermaid
+flowchart LR
+  accTitle: Live playback, from the CDN to the viewer
+  accDescr: 1, the player asks the playback API, which checks entitlement (plan, TV provider, stream limit) and rights (region and blackouts) and picks CDNs, and gets back a manifest URL with per-viewer ad breaks and a license URL. 2, it fetches the playlist and parts from a CDN edge, through a shield, from origin A or B. 3, the license service gives it keys and announces the next key early. 4, heartbeats and QoE go to Kafka, which feeds leases, CDN steering and who's watching.
+
+  player(["Player"])
+  api["Playback API"]
+  entitlement["Entitlement<br>plan, TV provider,<br>stream limit"]
+  rights["Rights: region,<br>blackout (note 32)"]
+  selector["CDN selector"]
+  cdnEdge["CDN edge"]
+  shield["Shield"]
+  origin[("Origin A (or B)")]
+  license["License service<br>keys, next key<br>announced early"]
+  kafka[/"Kafka"/]
+  consumers["Leases, steering,<br>who's watching"]
+
+  player -- "1" --> api --> entitlement & rights & selector
+  api -. "manifest URL<br>(per-viewer ad breaks),<br>license URL" .-> player
+  player -- "2 · playlist<br>+ parts" --> cdnEdge --> shield --> origin
+  player -- "3" --> license
+  player -- "4 · heartbeats<br>+ QoE" --> kafka --> consumers
 ```
 
 The playback path is the one from [note 17](17_Disney_Plus_Video_Streaming.md) — entitlements, stream limits, CDN choice, DRM. What's new is the live edge, the redundancy, the ad breaks and the rights.

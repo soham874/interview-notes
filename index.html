@@ -518,12 +518,19 @@ footer p{margin:0}
     .replace(/\s+/g, ' ')
     .trim();
 
+  // What a line of a ```mermaid diagram shows: its "quoted" and |piped| labels, without the syntax
+  // around them. Lines that only style the diagram, or describe it to screen readers, show nothing.
+  const labels = line => /^\s*(?:%%|(?:accTitle|accDescr|classDef|class|style|linkStyle)\b)/.test(line) ? ''
+    : [...line.matchAll(/"([^"]*)"|\|([^|]*)\|/g)]
+      .map(m => (m[1] ?? m[2]).replace(/^"|"$/g, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim())
+      .filter(Boolean).join(' · ');
+
   // Title (first # heading), section names (## headings), word count and plain text of a note, plus
   // where each heading starts in that text so a search match can say which section it is in.
   function parseNote(md) {
     const note = { title: '', sections: [], words: 0, text: '', starts: [] };
     const parts = [];
-    let fence = '', length = 0;
+    let fence = '', diagram = false, length = 0;
     const add = s => {
       s = s.trim();
       if (s) { parts.push(s); length += s.length + 1; }
@@ -532,10 +539,10 @@ footer p{margin:0}
       const f = /^ {0,3}(`{3,}|~{3,})/.exec(line);
       if (fence) {
         if (f && f[1][0] === fence[0] && f[1].length >= fence.length && !line.slice(f[0].length).trim()) fence = '';
-        else add(line);
+        else add(diagram ? labels(line) : line);
         continue;
       }
-      if (f) { fence = f[1]; continue; }
+      if (f) { fence = f[1]; diagram = /^mermaid\b/i.test(line.slice(f[0].length).trim()); continue; }
       const h = /^ {0,3}(#{1,6})(?:[ \t]+(.*?))?(?:[ \t]+#+)?[ \t]*$/.exec(line);
       if (h) {
         const text = plain(h[2] || '');

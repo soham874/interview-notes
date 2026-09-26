@@ -68,24 +68,38 @@ rendition_set (set_id, title_id, comp_id, codecs, ladder, key_ids,
 
 ## Architecture
 
-```text
- Studio or vendor
-   │  accelerated transfer (Aspera, Signiant) or presigned multipart upload
-   ↓
- Landing storage: encrypted, immutable, checksums verified
-   │  DeliveryReceived
-   ↓
- Workflow engine: durable state, retries, timers, human steps
-   │
-   ├──→ Validate: package complete for the order, CPL parses, checksums
-   ├──→ QC: automated checks, human review when needed
-   ├──→ Plan: complexity analysis → per-title ladder
-   ├──→ Encode: split → chunk tasks → worker fleet (spot) → stitch
-   ├──→ Package + encrypt: CMAF, HLS/DASH, keys from the key server
-   └──→ Publish: origin storage, catalog, CDN pre-positioning
-            │
-            ↓
-       TitlePlayable event ──→ catalog and availability (note 32)
+```mermaid
+flowchart TD
+  accTitle: Media ingest and transcoding architecture
+  accDescr: A studio or vendor delivers by accelerated transfer (Aspera, Signiant) or presigned multipart upload to landing storage, which is encrypted and immutable and verifies checksums. A DeliveryReceived event starts the workflow engine, which keeps durable state, retries, timers and human steps, and runs the steps in order: validate that the package is complete for the order, the CPL parses and the checksums match; QC, automated with human review when needed; plan a per-title ladder from a complexity analysis; encode by splitting into chunk tasks for a spot worker fleet and stitching; package and encrypt as CMAF for HLS and DASH with keys from the key server; and publish to origin storage, the catalog and CDN pre-positioning. Publishing sends a TitlePlayable event to catalog and availability.
+
+  studio(["Studio or vendor"])
+  landing[("Landing storage<br>encrypted, immutable,<br>checksums verified")]
+
+  subgraph engine["Workflow engine: durable state, retries, timers, human steps"]
+    direction TB
+    subgraph prepare[" "]
+      direction LR
+      validate["Validate<br>package complete<br>for the order,<br>CPL parses,<br>checksums"]
+      qc["QC<br>automated checks,<br>human review<br>when needed"]
+      plan["Plan<br>complexity analysis<br>→ per-title ladder"]
+      validate --> qc --> plan
+    end
+    subgraph produce[" "]
+      direction LR
+      encode["Encode<br>split → chunk tasks<br>→ worker fleet<br>(spot) → stitch"]
+      pack["Package + encrypt<br>CMAF, HLS/DASH,<br>keys from the<br>key server"]
+      publish["Publish<br>origin storage,<br>catalog, CDN<br>pre-positioning"]
+      encode --> pack --> publish
+    end
+    prepare --> produce
+  end
+
+  availability["Catalog and availability<br>(note 32)"]
+
+  studio -- "accelerated transfer<br>(Aspera, Signiant) or<br>presigned multipart upload" --> landing
+  landing -- "DeliveryReceived" --> engine
+  engine -- "TitlePlayable event" --> availability
 ```
 
 ## Deep dives

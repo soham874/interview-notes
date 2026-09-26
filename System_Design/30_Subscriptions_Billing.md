@@ -35,25 +35,36 @@
 
 ## Architecture
 
-```text
- Checkout (web, iOS, Android, TV)          Apple / Google / partners
-          │                                         │ server notifications
-          ↓                                         ↓
-   Checkout API                              Store adapters
-          │                                         │
-          ↓                                         │
-   Subscription service ←───────────────────────────┘
-   state machine, owns the lifecycle ←── Billing scheduler: renewals, dunning
-          │   ↑
-          │   └── Product catalog: plans, versions, prices, tax
-          ├──→ Payments ──→ PSP   (card tokens, idempotency keys)
-          ├──→ Invoices ──→ Ledger ──→ Reconciliation
-          │
-          ↓ outbox → Kafka
-   Entitlement service ──→ cache + token claims
-          │
-          ↓
-   playback · stream limits · ads · downloads · receipts
+```mermaid
+flowchart TD
+  accTitle: Subscriptions and billing architecture
+  accDescr: Checkout on the web, iOS, Android and TV goes through the checkout API, and server notifications from Apple, Google and partners go through store adapters, into the subscription service, which runs the state machine and owns the lifecycle. The billing scheduler drives renewals and dunning, and the product catalog supplies plans, versions, prices and tax. The subscription service charges through payments and the PSP with card tokens and idempotency keys, writes invoices to the ledger for reconciliation, and publishes changes through an outbox to Kafka. The entitlement service turns them into a cache and token claims, read by playback, stream limits, ads, downloads and receipts.
+
+  checkout(["Checkout<br>(web, iOS, Android, TV)"])
+  stores(["Apple / Google / partners"])
+  checkoutApi["Checkout API"]
+  adapters["Store adapters"]
+  subscriptions["Subscription service<br>state machine,<br>owns the lifecycle"]
+  scheduler["Billing scheduler<br>renewals, dunning"]
+  catalog["Product catalog<br>plans, versions,<br>prices, tax"]
+  payments["Payments"]
+  psp(["PSP"])
+  invoices["Invoices"]
+  ledger[("Ledger")]
+  reconciliation["Reconciliation"]
+  kafka[/"Kafka"/]
+  entitlements["Entitlement service"]
+  claims[("Cache +<br>token claims")]
+  readers(["Playback, stream limits,<br>ads, downloads, receipts"])
+
+  checkout --> checkoutApi --> subscriptions
+  stores -- "server<br>notifications" --> adapters --> subscriptions
+  scheduler --> subscriptions
+  catalog --> subscriptions
+  subscriptions --> payments -- "card tokens,<br>idempotency keys" --> psp
+  subscriptions --> invoices --> ledger --> reconciliation
+  subscriptions -- "outbox" --> kafka --> entitlements --> claims
+  entitlements --> readers
 ```
 
 | Service | Owns |

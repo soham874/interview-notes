@@ -49,19 +49,35 @@ Viewers see it through the playback API in [note 17](17_Disney_Plus_Video_Stream
 
 ## Architecture
 
-```text
- Player ──start──→ Playback service ──acquire──→ Stream-limit service
-   │                                                    ↑       │
-   ├──heartbeat, every 30 s──→ Heartbeat API ──renew────┤       ↓
-   │                                                    │ Redis cluster
-   └──license renewal──→ License service ──has lease?───┘ (per account)
-                         no lease → no renewal → playback stops
+```mermaid
+flowchart TD
+  accTitle: Stream-limit architecture
+  accDescr: Starting playback, heartbeats and license renewals all go through the stream-limit service, which keeps each account's leases in a Redis cluster; without a lease the license isn't renewed and playback stops. Separately, a household service turns sharing signals into prompts, and policy decides how strict it is.
 
- Signals: networks, device IDs, sign-in activity
-    │
-    ↓
- Household service ──→ prompts, verification codes, Extra Member offer
-                       (policy decides how strict — it isn't the counter)
+  player(["Player"])
+  playback["Playback service"]
+  heartbeat["Heartbeat API"]
+  license["License service"]
+  limits["Stream-limit service"]
+  redis[("Redis cluster<br>(per account)")]
+  stops["No lease → no renewal<br>→ playback stops"]:::aside
+
+  player -- "start" --> playback -- "acquire" --> limits
+  player -- "heartbeat,<br>every 30 s" --> heartbeat -- "renew" --> limits
+  player -- "license<br>renewal" --> license -- "has lease?" --> limits
+  limits --> redis
+  license -.- stops
+
+  signals(["Signals: networks,<br>device IDs, sign-in activity"])
+  household["Household service"]
+  prompts["Prompts, verification codes,<br>Extra Member offer"]
+  policy["Policy decides how strict —<br>it isn't the counter"]:::aside
+
+  redis ~~~ signals
+  signals --> household --> prompts
+  household -.- policy
+
+  classDef aside fill:none,stroke-dasharray:4 3
 ```
 
 - **Start:** acquire → granted, and the session proceeds; denied → 409 with who's watching.

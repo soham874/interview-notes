@@ -64,24 +64,30 @@ availability    (territory, version, entries: title_id → windows) the output
 
 ## Architecture
 
-```text
- Contracts: deals, windows ──→ Rights ingest ────────────┐
- Legal: takedowns, holds ────→ Restrictions ─────────────┤
- Metadata ops ───────────────→ Catalog: titles, ratings ─┤
-                                                         ↓
-                 Availability compiler: rights − restrictions → windows
-                 per (title, territory) with tiers, platforms, downloads
-                                                         │ versioned, diffed,
-                                                         ↓ canaried
-                 Snapshot store + change events (Kafka stream)
-                     │                  │                  │
-                     ↓                  ↓                  ↓
-              API nodes: snapshot  Search index:     "Coming soon",
-              in memory per        filtered per      "Leaving soon",
-              territory            territory         notifications
-                     │
-                     ↓
-         browse · title page · search · playback start (authoritative)
+```mermaid
+flowchart TD
+  accTitle: Catalog, rights and availability architecture
+  accDescr: Deals and windows from contracts go through rights ingest, takedowns and holds from legal become restrictions, and metadata ops maintain the catalog of titles and ratings. The availability compiler takes rights minus restrictions and produces windows per title and territory, with tiers, platforms and downloads, and publishes them, versioned, diffed and canaried, to a snapshot store with change events on a Kafka stream. From there, API nodes hold the snapshot in memory per territory for browse, the title page, search and the authoritative playback-start check; the search index is filtered per territory; and "Coming soon", "Leaving soon" and notifications are driven by the changes.
+
+  contracts(["Contracts:<br>deals, windows"])
+  legal(["Legal:<br>takedowns, holds"])
+  metadataOps(["Metadata ops"])
+  rights["Rights ingest"]
+  restrictions["Restrictions"]
+  catalog["Catalog:<br>titles, ratings"]
+  compiler["Availability compiler<br>rights − restrictions →<br>windows per (title,<br>territory) with tiers,<br>platforms, downloads"]
+  snapshots[("Snapshot store<br>+ change events<br>(Kafka stream)")]
+  apiNodes["API nodes<br>snapshot in memory<br>per territory"]
+  search["Search index<br>filtered per territory"]
+  soon["“Coming soon”,<br>“Leaving soon”,<br>notifications"]
+  reads(["browse · title page ·<br>search · playback start<br>(authoritative)"])
+
+  contracts --> rights --> compiler
+  legal --> restrictions --> compiler
+  metadataOps --> catalog --> compiler
+  compiler -- "versioned, diffed,<br>canaried" --> snapshots
+  snapshots --> apiNodes & search & soon
+  apiNodes --> reads
 ```
 
 ## Deep dives
