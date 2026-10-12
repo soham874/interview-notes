@@ -87,7 +87,6 @@ a{color:var(--accent)}
 .side-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px;margin:0 0 8px;padding:0 8px}
 .side-head a{color:var(--ink-2);font:600 .72rem/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;text-decoration:none}
 .side-head a:hover{color:var(--accent)}
-.side-close{display:none}
 .side-group + .side-group{margin-top:12px}
 .side-group > summary{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;color:var(--ink);font:700 .95rem/1.3 var(--f-display);cursor:pointer;list-style:none}
 .side-group > summary::-webkit-details-marker{display:none}
@@ -121,10 +120,17 @@ a{color:var(--accent)}
   .side{position:fixed;z-index:50;top:0;bottom:0;left:0;align-self:stretch;width:min(86vw,330px);height:auto;padding-top:10px;background:var(--surface);box-shadow:var(--shadow);transform:translateX(-104%);visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s}
   .drawer-open .side{transform:none;visibility:visible;transition:transform .22s ease}
   .drawer-open{overflow:hidden}
-  .side-close{display:inline-flex}
+  .side-close .i-collapse{display:none}
   .scrim{position:fixed;inset:0;z-index:45;background:rgb(8 12 18 / .45)}
 }
-@media (min-width:900px){.menu,.scrim{display:none!important}}
+@media (min-width:900px){
+  .scrim{display:none!important}
+  .side-close .i-close{display:none}
+  /* the list of notes, hidden with the menu button or its own; the choice is kept under SIDE_KEY */
+  .side-hidden .side{display:none}
+  .side-hidden .layout{grid-template-columns:minmax(0,1fr) 236px}
+}
+@media (min-width:900px) and (max-width:1199px){.side-hidden .layout{grid-template-columns:minmax(0,1fr)}}
 
 /* the note */
 .doc{min-height:60vh;line-height:1.72;overflow-wrap:break-word}
@@ -265,8 +271,9 @@ body:not([data-built="jekyll"]) .note-unbuilt{display:block}
     <div class="side-head">
       <a href="./#notes">All notes</a>
       <button type="button" class="icon-btn side-close" id="noteSideClose">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
-        <span class="sr-only">Close the list of notes</span>
+        <svg class="i-close" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        <svg class="i-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m11 17-5-5 5-5M18 17l-5-5 5-5"/></svg>
+        <span class="sr-only">Hide the list of notes</span>
       </button>
     </div>
   </nav>
@@ -388,24 +395,44 @@ body:not([data-built="jekyll"]) .note-unbuilt{display:block}
       else n.link.removeAttribute('aria-current');
     }
     note.group.details.open = true;
+    reveal(note);
+  }
+
+  function reveal(note) {
     const box = ui.side.getBoundingClientRect(), link = note.link.getBoundingClientRect();
     if (link.top < box.top || link.bottom > box.bottom) ui.side.scrollTop += link.top - box.top - box.height / 3;
   }
 
+  // Narrow screens show the list as a drawer over the note. Wide ones show it as a column, which the
+  // menu button or the list's own button hides, and which stays hidden for later notes and visits.
   const narrow = matchMedia('(max-width: 899px)');
+  const SIDE_KEY = 'interview-notes:side-hidden:v1';
+  const sideShown = () => narrow.matches ? document.body.classList.contains('drawer-open') : !document.body.classList.contains('side-hidden');
+  const syncMenu = () => ui.menu.setAttribute('aria-expanded', String(sideShown()));
   function drawer(open) {
     open = open && narrow.matches;
     if (open === document.body.classList.contains('drawer-open')) return;
     document.body.classList.toggle('drawer-open', open);
-    ui.menu.setAttribute('aria-expanded', String(open));
+    syncMenu();
     ui.scrim.hidden = !open;
     ui.main.inert = open;
     if (open) ((current && current.link) || $('a', ui.side)).focus({ preventScroll: true });
   }
-  ui.menu.addEventListener('click', () => drawer(!document.body.classList.contains('drawer-open')));
+  function hideSide(hidden) {
+    document.body.classList.toggle('side-hidden', hidden);
+    store.set(SIDE_KEY, hidden);
+    syncMenu();
+    if (!hidden && current) reveal(current); // a hidden list loses its scroll position
+  }
+  document.body.classList.toggle('side-hidden', store.get(SIDE_KEY) === true);
+  syncMenu();
+  ui.menu.addEventListener('click', () => narrow.matches ? drawer(!sideShown()) : hideSide(sideShown()));
   ui.scrim.addEventListener('click', () => drawer(false));
-  $('#noteSideClose').addEventListener('click', () => { drawer(false); ui.menu.focus(); });
-  narrow.addEventListener('change', () => drawer(false));
+  $('#noteSideClose').addEventListener('click', () => {
+    if (narrow.matches) drawer(false); else hideSide(true);
+    ui.menu.focus();
+  });
+  narrow.addEventListener('change', () => { drawer(false); syncMenu(); });
 
   /* ---- loading a note ---- */
 
