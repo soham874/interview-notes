@@ -73,16 +73,16 @@ When every row in a group sits at 4+, do one timed 45-minute mock on a system fr
 | 21 | ◆ [Fantasy sports: draft room + live scoring](System_Design/21_Fantasy_Sports.md) | Stateful WebSocket rooms, a server-side pick clock, optimistic concurrency on picks, player → team fan-out | ESPN | | |
 | 22 | ◆ Live chat | WebSocket gateways, presence, message ordering and storage, very large rooms | Any | | |
 | 23 | ○ Watch party (synchronized playback) | Shared control messages, clock-offset estimation, drift correction | Streaming | | |
-| 24 | ★ Photo-sharing feed (Instagram) | Upload pipeline, fan-out on write vs on read, the celebrity problem, feed ranking | Any (Hotstar) | | |
+| 24 | ★ [Photo-sharing feed (Instagram)](System_Design/24_Social_Media_Feed.md) | Upload pipeline, fan-out on write vs on read, the celebrity problem, feed ranking | Any (Hotstar) | | |
 
 ## G. Ranking, personalization & search
 
 | # | System | What it teaches | Asked by | Conf. (1–5) | Last reviewed |
 |---|---|---|---|---|---|
-| 25 | ★ Global game leaderboard | Sorted sets, rank queries, ties, sharding to 100M players, season settlement | Any (games) | | |
-| 26 | ★ Home page & recommendations | Offline candidates + online re-ranking, rows with per-row timeouts, cold start, fallbacks | Streaming | | |
-| 27 | ◆ Search & autocomplete (titles, products) | Inverted index, typeahead, ranking, faceted browsing, filtering by country availability | Streaming, Parks (shopDisney) | | |
-| 28 | ○ Trending / "Top 10 today" | Streaming top-K (count-min sketch + heap), time windows, per-region lists | Streaming | | |
+| 25 | ★ [Global game leaderboard](System_Design/25_Global_Leaderboard.md) | Sorted sets, rank queries, ties, sharding to 100M players, season settlement | Any (games) | | |
+| 26 | ★ [Home page & recommendations](System_Design/26_Home_Page_Recommendations.md) | Offline candidates + online re-ranking, rows with per-row timeouts, cold start, fallbacks | Streaming | | |
+| 27 | ◆ [Search & autocomplete (titles, products)](System_Design/27_Search_Autocomplete.md) | Inverted index, typeahead, ranking, faceted browsing, filtering by country availability | Streaming, Parks (shopDisney) | | |
+| 28 | ○ [Trending / "Top 10 today"](System_Design/28_Trending_Top_10.md) | Streaming top-K (count-min sketch + heap), time windows, per-region lists | Streaming | | |
 
 ## H. Identity, entitlements & money
 

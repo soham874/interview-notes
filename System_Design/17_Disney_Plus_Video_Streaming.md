@@ -21,7 +21,7 @@
 - Content protection is contractual: DRM everywhere, hardware-backed DRM and HDCP for HD/4K, forensic watermarking for high-value early releases.
 - Cost: bandwidth dominates, so CDN offload (the cache-hit ratio) is a first-class requirement.
 
-**Say what's out of scope:** browse and recommendations (#26), search (#27), live ([note 19](19_Live_Sports_Streaming.md)), billing ([note 30](30_Subscriptions_Billing.md)), ad decisioning (#37).
+**Say what's out of scope:** browse and recommendations ([note 26](26_Home_Page_Recommendations.md)), search ([note 27](27_Search_Autocomplete.md)), live ([note 19](19_Live_Sports_Streaming.md)), billing ([note 30](30_Subscriptions_Billing.md)), ad decisioning (#37).
 
 ## Back-of-envelope
 

@@ -259,7 +259,7 @@ public record Rendition(Codec codec, Resolution resolution, int bitrateKbps, Opt
 | AWS Elemental MediaConvert, Mux | This pipeline as a managed service |
 | Dropbox and Google Drive uploads | Chunked, resumable, content-addressed uploads — the ingest half without the encoding |
 | Spark and MapReduce | Split → parallel map → combine with straggler handling; encoding is MapReduce over time ranges |
-| Photo pipelines (tracker #24) | The same ingest → transform → publish shape with tiny files in huge numbers |
+| Photo pipelines ([note 24](24_Social_Media_Feed.md)) | The same ingest → transform → publish shape with tiny files in huge numbers |
 
 ## Commonly asked
 
